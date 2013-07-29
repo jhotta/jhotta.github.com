@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2013-07-29T22:45:02+09:00</updated>
+  <updated>2013-07-29T22:55:08+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[ここがテスト]]></title>
-    <link href="http://jhotta.github.io/blog/2013/07/29/test-of-me-2/"/>
+    <link href="http://jhotta.github.io/blog/2013/07/29/test-of-me/"/>
     <updated>2013-07-29T13:36:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2013/07/29/test-of-me-2</id>
+    <id>http://jhotta.github.io/blog/2013/07/29/test-of-me</id>
     <content type="html"><![CDATA[<p>ここに何を書こうか…</p>
 ]]></content>
   </entry>
