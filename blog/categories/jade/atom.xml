@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Etizolam]]></title>
-  <link href="http://jhotta.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: jade | Etizolam]]></title>
+  <link href="http://jhotta.github.io/blog/categories/jade/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
   <updated>2013-11-11T16:25:46+09:00</updated>
   <id>http://jhotta.github.io/</id>
@@ -18,24 +18,6 @@
     <link href="http://jhotta.github.io/blog/2013/11/11/translte-with-jade-temp-engine/"/>
     <updated>2013-11-11T16:00:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2013/11/11/translte-with-jade-temp-engine</id>
-    <content type="html"><![CDATA[<h2>これから始まること</h2>
-
-<ul>
-<li>fed</li>
-<li>safa</li>
-<li>saf</li>
-<li>test</li>
-<li>test</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[ここがテスト]]></title>
-    <link href="http://jhotta.github.io/blog/2013/07/29/blog-template/"/>
-    <updated>2013-07-29T13:35:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2013/07/29/blog-template</id>
     <content type="html"><![CDATA[<h2>これから始まること</h2>
 
 <ul>
