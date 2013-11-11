@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2013-10-09T15:50:43+09:00</updated>
+  <updated>2013-11-11T14:19:21+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -14,22 +14,18 @@
 
   
   <entry>
-    <title type="html"><![CDATA[終わりの始まり]]></title>
-    <link href="http://jhotta.github.io/blog/2013/10/09/start-of-restart/"/>
-    <updated>2013-10-09T15:31:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2013/10/09/start-of-restart</id>
-    <content type="html"><![CDATA[<p>マクドナルドで、白髪でシーツを着た教授達が我が物顔で大声で話している。色々話してはいるけど、じじぃの井戸端会議を丸出しだ！</p>
-
-<h2>こんな感じでいいのか？</h2>
-
-<p>分っていても辞められない。</p>
+    <title type="html"><![CDATA[waiwai]]></title>
+    <link href="http://jhotta.github.io/blog/2013/09/03/waiwai/"/>
+    <updated>2013-09-03T13:35:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/09/03/waiwai</id>
+    <content type="html"><![CDATA[<p>ここに何を書こうか…</p>
 ]]></content>
   </entry>
   
   <entry>
     <title type="html"><![CDATA[ここがテスト]]></title>
     <link href="http://jhotta.github.io/blog/2013/07/29/test-of-me/"/>
-    <updated>2013-07-29T13:36:00+09:00</updated>
+    <updated>2013-07-29T13:35:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2013/07/29/test-of-me</id>
     <content type="html"><![CDATA[<p>ここに何を書こうか…</p>
 ]]></content>
