@@ -1,14 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>http://jhotta.github.io/blog/2013/07/29/blog-template/</loc>
-        <lastmod>2013-11-11T15:50:20+09:00</lastmod>
-    </url>
-    <url>
-        <loc>http://jhotta.github.io/blog/2013/11/11/translte-with-jade-temp-engine/</loc>
-        <lastmod>2013-11-12T01:19:53+09:00</lastmod>
-    </url>
-    <url>
         <loc>http://jhotta.github.io/blog/2013/11/12/Lean-UX-seminar/</loc>
         <lastmod>2013-11-14T12:49:33+09:00</lastmod>
     </url>
