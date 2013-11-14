@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2013-11-12T01:22:07+09:00</updated>
+  <updated>2013-11-14T13:19:10+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,33 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lean UX 入門セミナー]]></title>
+    <link href="http://jhotta.github.io/blog/2013/11/12/Lean-UX-seminar/"/>
+    <updated>2013-11-12T19:00:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/11/12/Lean-UX-seminar</id>
+    <content type="html"><![CDATA[<h2>まず、Lean UXってなに？</h2>
+
+<p><a href="http://www.amazon.co.jp/dp/1449311652">Lean UX: Applying Lean Principles to Improve User Experience</a></p>
+
+<ul>
+<li>fed</li>
+<li>safa</li>
+<li>saf</li>
+<li>test</li>
+<li>test</li>
+</ul>
+
+
+<p><img src="http://jhotta.github.io/images/email.png" title="Qiita" alt="Qiita" /></p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='objc'><span class='line'><span class="p">[</span><span class="n">rectangle</span> <span class="nl">setX:</span> <span class="mi">10</span> <span class="nl">y:</span> <span class="mi">10</span> <span class="nl">width:</span> <span class="mi">20</span> <span class="nl">height:</span> <span class="mi">20</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Jadeというtemplate enginを使ってサイト翻訳]]></title>

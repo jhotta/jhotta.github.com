@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: jade | Etizolam]]></title>
-  <link href="http://jhotta.github.io/blog/categories/jade/atom.xml" rel="self"/>
+  <title><![CDATA[Category: セミナー | Etizolam]]></title>
+  <link href="http://jhotta.github.io/blog/categories/semina/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
   <updated>2013-11-14T13:19:10+09:00</updated>
   <id>http://jhotta.github.io/</id>
@@ -14,15 +14,13 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Jadeというtemplate enginを使ってサイト翻訳]]></title>
-    <link href="http://jhotta.github.io/blog/2013/11/11/translte-with-jade-temp-engine/"/>
-    <updated>2013-11-11T16:00:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2013/11/11/translte-with-jade-temp-engine</id>
-    <content type="html"><![CDATA[<h2>これから始まること</h2>
+    <title type="html"><![CDATA[Lean UX 入門セミナー]]></title>
+    <link href="http://jhotta.github.io/blog/2013/11/12/Lean-UX-seminar/"/>
+    <updated>2013-11-12T19:00:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/11/12/Lean-UX-seminar</id>
+    <content type="html"><![CDATA[<h2>まず、Lean UXってなに？</h2>
 
-<h3>それで分ること</h3>
-
-<h4>ここまででわかること</h4>
+<p><a href="http://www.amazon.co.jp/dp/1449311652">Lean UX: Applying Lean Principles to Improve User Experience</a></p>
 
 <ul>
 <li>fed</li>
