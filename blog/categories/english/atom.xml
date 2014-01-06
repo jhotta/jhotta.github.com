@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
+<<<<<<< HEAD
   <title><![CDATA[Category: English | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/english/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
@@ -8,6 +9,15 @@
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[Naotaka Jay Hotta]]></name>
+=======
+  <title><![CDATA[Category: english | Etizolam]]></title>
+  <link href="http://jhotta.github.io/blog/categories/english/atom.xml" rel="self"/>
+  <link href="http://jhotta.github.io/"/>
+  <updated>2014-01-06T19:02:36+09:00</updated>
+  <id>http://jhotta.github.io/</id>
+  <author>
+    <name><![CDATA[@jhotta]]></name>
+>>>>>>> e3e374d13ebdb3ef80557ed5bea1065f8b49bbab
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
@@ -18,7 +28,11 @@
     <link href="http://jhotta.github.io/blog/2014/01/06/engineer-english-1/"/>
     <updated>2014-01-06T15:14:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/01/06/engineer-english-1</id>
+<<<<<<< HEAD
     <content type="html"><![CDATA[<p>2013年12月2日に、<a href="http://atnd.org/event/aikyari01">&ldquo;「グローバル人材の今を考える」第1弾: 英語を使って働く・英語を学ぶ&rdquo;</a>と題されたセミナーで印象に残ったポイントの一つである <strong>「伝わる」</strong> ことを個人的な解釈に基づいて考えてみました。</p>
+=======
+    <content type="html"><![CDATA[<p>2013年12月2日に、<a href="http://atnd.org/event/aikyari01">「グローバル人材の今を考える」第1弾: 英語を使って働く・英語を学ぶ</a>と題されたセミナーで印象に残ったポイントの一つである <strong>「伝わる」</strong> ことを個人的な解釈に基づいて考えてみました。</p>
+>>>>>>> e3e374d13ebdb3ef80557ed5bea1065f8b49bbab
 
 <h2>「伝わる英語」って、"ママゴト英語"ではないよね〜?!</h2>
 
