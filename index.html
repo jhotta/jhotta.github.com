@@ -106,11 +106,11 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
 
 
-<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
 
-<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
+<p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
 
@@ -192,6 +192,8 @@
 </span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
 
 
+<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎ見たいなグラフをDatadogのダッシュボードで見ることができます。</p>
+
 <p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="datadog dash & raspi" alt="datadog dash & raspi"></p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
@@ -243,19 +245,19 @@
 
 <p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
 
-<p>まず最初にDatadogのアカウントを取得します。右上隅のFREE TRIALボタンをクリックし、登録情報の入力画面に遷移します。</p>
+<p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
 
-<p>一通り情報を入力し、Sing upボタンをクリックし登録を完了します。</p>
+<p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="datadog register page" alt="datadog register page"></p>
 
-<p>登録が完了すると次のようなdatadogのダッシュボードが表示されます。このダッシュボードで、integrationsタブにカーソルを移動しagentと項目を選択すると次のページが表示されます。</p>
+<p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent os select" alt="datadog agent os select"></p>
 
-<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのdatadog agentをインストールするためのコマンドが表示されます。</p>
+<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
 
 <p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
 
@@ -293,15 +295,15 @@
 </span><span class='line'>    sudo /etc/init.d/datadog-agent start</span></code></pre></td></tr></table></div></figure>
 
 
-<p>コンソールにメッセージが表示されたところで、infrastructureタブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
+<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog infrastructure page" alt="datadog infrastructure page"></p>
 
-<p>サーバの名前をクリックすると、そのサーバに関して、datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+<p>サーバの名前をクリックすると、そのサーバに関して、Datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog target infra page" alt="datadog  target infra page"></p>
 
-<p>次回は、datadog agentが収集している基本メトリックス以外の情報をdatadogに送信しするための情報を解説します。</p>
+<p>次回は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信しするための情報を解説します。</p>
 </div>
   
   

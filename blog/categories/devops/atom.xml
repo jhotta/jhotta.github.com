@@ -4,7 +4,7 @@
   <title><![CDATA[Category: DevOps | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/devops/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T17:37:05+09:00</updated>
+  <updated>2014-04-11T17:54:19+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -31,19 +31,19 @@
 
 <p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
 
-<p>まず最初にDatadogのアカウントを取得します。右上隅のFREE TRIALボタンをクリックし、登録情報の入力画面に遷移します。</p>
+<p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
 
-<p>一通り情報を入力し、Sing upボタンをクリックし登録を完了します。</p>
+<p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="&lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo;" ></p>
 
-<p>登録が完了すると次のようなdatadogのダッシュボードが表示されます。このダッシュボードで、integrationsタブにカーソルを移動しagentと項目を選択すると次のページが表示されます。</p>
+<p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="&lsquo;datadog agent os select&rsquo; &lsquo;datadog agent os select&rsquo;" ></p>
 
-<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのdatadog agentをインストールするためのコマンドが表示されます。</p>
+<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
 
 <p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="&lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo;" ></p>
 
@@ -73,15 +73,15 @@ background and submit metrics to Datadog.</p>
 
 <p>```</p>
 
-<p>コンソールにメッセージが表示されたところで、infrastructureタブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
+<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo;" ></p>
 
-<p>サーバの名前をクリックすると、そのサーバに関して、datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+<p>サーバの名前をクリックすると、そのサーバに関して、Datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="&lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo;" ></p>
 
-<p>次回は、datadog agentが収集している基本メトリックス以外の情報をdatadogに送信しするための情報を解説します。</p>
+<p>次回は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信しするための情報を解説します。</p>
 ]]></content>
   </entry>
   

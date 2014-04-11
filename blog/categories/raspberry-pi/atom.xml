@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Raspberry Pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T17:37:05+09:00</updated>
+  <updated>2014-04-11T17:54:19+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -30,11 +30,11 @@
 sudo apt-get install sysstat
 </code></p>
 
-<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
-<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
+<p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
@@ -83,6 +83,8 @@ sh bin/agent
 </code></pre>
 
 <p>```</p>
+
+<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎ見たいなグラフをDatadogのダッシュボードで見ることができます。</p>
 
 <p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
 
