@@ -9,8 +9,8 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="マクドナルドで、白髪でシーツを着た教授達が我が物顔で大声で話している。色々話してはいるけど、じじぃの井戸端会議を丸出しだ！ こんな感じでいいのか？ 分っていても辞められない。
-">
+  <meta name="description" content="世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がする。
+僕が2013 Pycon APAC時に使ったDatadogのスライドにも、未だに多くの人が見に来てくれていて、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -25,7 +25,7 @@
   <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
@@ -72,7 +72,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/10/09/start-of-restart/">終わりの始まり</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a></h1>
     
     
       <p class="meta">
@@ -88,54 +88,83 @@
   
 
 
-<time datetime="2013-10-09T15:31:00+09:00" pubdate data-updated="true">Oct 9<span>th</span>, 2013</time>
+<time datetime="2014-04-08T19:11:00+09:00" pubdate data-updated="true">Apr 8<span>th</span>, 2014</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>マクドナルドで、白髪でシーツを着た教授達が我が物顔で大声で話している。色々話してはいるけど、じじぃの井戸端会議を丸出しだ！</p>
+  <div class="entry-content"><p>世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がする。
+僕が2013 Pycon APAC時に使ったDatadogのスライドにも、未だに多くの人が見に来てくれていて、Datadogを使うための日本語の入門記事をblogにすることは、いつも僕の要望に応えてくれるDatadog CTOのAlexisへの恩返しのためにも必要かなと感じた。</p>
 
-<h2>こんな感じでいいのか？</h2>
+<p>個人的には、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックスと違って、かゆいところに手が届く仕様になっていると感じている。この醍醐味を少しでも多くのプログラマーに知ってもらいたいという動機もを後押ししている気がする。</p>
 
-<p>分っていても辞められない。</p>
-</div>
-  
-  
+<p>尚、今回Datadog agentをインストールするOSは、僕が使い慣れているUbuntuにする。基本的なサーバーメトリックスをDatadogに送信ができるようになったら、Datadogが提供しているPythonラッパーを使って、プログラム内から自分たち独自のデータをDatadogに送信しモニターリングたり、APIを使ってタイムラインにメッセージを表示したりするなど、初歩的で特徴的な使い方を紹介したいと思っている。</p>
 
+<h2>UbuntuにDatadog agentをインストール</h2>
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/07/29/test-of-me/">ここがテスト</a></h1>
-    
-    
-      <p class="meta">
-        
+<p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
 
+<p>まず最初にDatadogのアカウントを取得します。右上隅のFREE TRIALボタンをクリックし、登録情報の入力画面に遷移します。</p>
 
+<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
 
+<p>一通り情報を入力し、Sing upボタンをクリックし登録を完了します。</p>
 
+<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="datadog register page" alt="datadog register page"></p>
 
+<p>登録が完了すると次のようなdatadogのダッシュボードが表示されます。このダッシュボードで、integrationsタブにカーソルを移動しagentと項目を選択すると次のページが表示されます。</p>
 
+<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
 
+<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのdatadog agentをインストールするためのコマンドが表示されます。</p>
 
-  
+<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
 
+<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりコマンドをroot権限で実行します。</p>
 
-<time datetime="2013-07-29T13:36:00+09:00" pubdate data-updated="true">Jul 29<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo DD_API_KEY={アカウントに紐づいたkey code} bash -c "$(curl -L http://dtdg.co/agent-install-ubuntu)"</span></code></pre></td></tr></table></div></figure>
 
 
-  <div class="entry-content"><p>ここに何を書こうか…</p>
+<p>インストール作業が順調に作業が進んで、Datadogへデータを送信できたことが確認が取れると次のメッセージがコンソールに表示されます。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Waiting for metrics.................................
+</span><span class='line'>
+</span><span class='line'>Your Agent is running and functioning properly. It will continue to run in the
+</span><span class='line'>background and submit metrics to Datadog.
+</span><span class='line'>
+</span><span class='line'>If you ever want to stop the Agent, run:
+</span><span class='line'>
+</span><span class='line'>    sudo /etc/init.d/datadog-agent stop
+</span><span class='line'>
+</span><span class='line'>And to run it again run:
+</span><span class='line'>
+</span><span class='line'>    sudo /etc/init.d/datadog-agent start</span></code></pre></td></tr></table></div></figure>
+
+
+<p>コンソールにメッセージが表示されたところで、infrastructureタブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
+
+<p>サーバの名前をクリックすると、そのサーバに関して、datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
+
+<p>次回は、datadog agentが収集している基本メトリックス以外の情報をdatadogに送信しするための情報を解説します。</p>
 </div>
   
   
@@ -156,11 +185,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2013/10/09/start-of-restart/">終わりの始まり</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/29/test-of-me/">ここがテスト</a>
+        <a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a>
       </li>
     
   </ul>

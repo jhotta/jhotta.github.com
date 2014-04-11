@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Datadog | Etizolam]]></title>
+  <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
+  <link href="http://jhotta.github.io/"/>
+  <updated>2014-04-11T14:44:49+09:00</updated>
+  <id>http://jhotta.github.io/</id>
+  <author>
+    <name><![CDATA[@jhotta]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Datadogでサービスモニターリング [Agentのインストール]]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/08/install-datadog-agent/"/>
+    <updated>2014-04-08T19:11:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/08/install-datadog-agent</id>
+    <content type="html"><![CDATA[<p>世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がする。
+僕が2013 Pycon APAC時に使ったDatadogのスライドにも、未だに多くの人が見に来てくれていて、Datadogを使うための日本語の入門記事をblogにすることは、いつも僕の要望に応えてくれるDatadog CTOのAlexisへの恩返しのためにも必要かなと感じた。</p>
+
+<p>個人的には、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックスと違って、かゆいところに手が届く仕様になっていると感じている。この醍醐味を少しでも多くのプログラマーに知ってもらいたいという動機もを後押ししている気がする。</p>
+
+<p>尚、今回Datadog agentをインストールするOSは、僕が使い慣れているUbuntuにする。基本的なサーバーメトリックスをDatadogに送信ができるようになったら、Datadogが提供しているPythonラッパーを使って、プログラム内から自分たち独自のデータをDatadogに送信しモニターリングたり、APIを使ってタイムラインにメッセージを表示したりするなど、初歩的で特徴的な使い方を紹介したいと思っている。</p>
+
+<h2>UbuntuにDatadog agentをインストール</h2>
+
+<p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
+
+<p>まず最初にDatadogのアカウントを取得します。右上隅のFREE TRIALボタンをクリックし、登録情報の入力画面に遷移します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
+
+<p>一通り情報を入力し、Sing upボタンをクリックし登録を完了します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="&lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo;" ></p>
+
+<p>登録が完了すると次のようなdatadogのダッシュボードが表示されます。このダッシュボードで、integrationsタブにカーソルを移動しagentと項目を選択すると次のページが表示されます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="&lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo;" ></p>
+
+<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのdatadog agentをインストールするためのコマンドが表示されます。</p>
+
+<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="&lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo;" ></p>
+
+<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりコマンドをroot権限で実行します。</p>
+
+<p><code>
+sudo DD_API_KEY={アカウントに紐づいたkey code} bash -c "$(curl -L http://dtdg.co/agent-install-ubuntu)"
+</code></p>
+
+<p>インストール作業が順調に作業が進んで、Datadogへデータを送信できたことが確認が取れると次のメッセージがコンソールに表示されます。</p>
+
+<p>```
+Waiting for metrics&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</p>
+
+<p>Your Agent is running and functioning properly. It will continue to run in the
+background and submit metrics to Datadog.</p>
+
+<p>If you ever want to stop the Agent, run:</p>
+
+<pre><code>sudo /etc/init.d/datadog-agent stop
+</code></pre>
+
+<p>And to run it again run:</p>
+
+<pre><code>sudo /etc/init.d/datadog-agent start
+</code></pre>
+
+<p>```</p>
+
+<p>コンソールにメッセージが表示されたところで、infrastructureタブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
+
+<p>サーバの名前をクリックすると、そのサーバに関して、datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
+
+<p>次回は、datadog agentが収集している基本メトリックス以外の情報をdatadogに送信しするための情報を解説します。</p>
+]]></content>
+  </entry>
+  
+</feed>
