@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T17:54:19+09:00</updated>
+  <updated>2014-04-11T17:55:27+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -84,7 +84,7 @@ sh bin/agent
 
 <p>```</p>
 
-<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎ見たいなグラフをDatadogのダッシュボードで見ることができます。</p>
+<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎの写真みたいなグラフをDatadogのダッシュボードで見ることができます。</p>
 
 <p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
 
