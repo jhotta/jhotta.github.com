@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T15:14:42+09:00</updated>
+  <updated>2014-04-11T16:35:17+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,113 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Raspberry piにDatadog Agentをインストールしてみる]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/"/>
+    <updated>2014-04-11T15:44:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi</id>
+    <content type="html"><![CDATA[<p>日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。</p>
+
+<p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
+
+<h2>Datadog Agentのインストール</h2>
+
+<p>まず最初に、DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行し、必要に応じてsysstatインストールしておく。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインする。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分のコマンドコピーする。</p>
+
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>このコマンドを、コンソールからroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span><span class='line'>                                 Dload  Upload   Total   Spent    Left  Speed
+</span><span class='line'>100   184  100   184    0     0    309      0 --:--:-- --:--:-- --:--:--   859
+</span><span class='line'>100 17616  100 17616    0     0  19108      0 --:--:-- --:--:-- --:--:-- 19108
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Installing Datadog Agent 4.2.1
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Creating Agent directory /root/.datadog-agent..... Done
+</span><span class='line'>Creating log file /root/.datadog-agent/ddagent-install.log.....Done
+</span><span class='line'>Setting up virtual environment.....Done
+</span><span class='line'>Setting up setuptools and pip.....Done
+</span><span class='line'>Installing tornado 2.4.1 using pip.....Done
+</span><span class='line'>Downloading the latest version of the Agent from github (~2.5 MB).....Done
+</span><span class='line'>Uncompressing the archive.....Done
+</span><span class='line'>Configuring datadog.conf file......Done
+</span><span class='line'>Setting up launching scripts.....Done
+</span><span class='line'>Setting up supervisor.....Done
+</span><span class='line'>Consolidating logging.....Done
+</span><span class='line'>Cleaning up the installation directory.....Done
+</span><span class='line'>Starting the Agent.....Done
+</span><span class='line'>
+</span><span class='line'>    Your Agent has started up for the first time. We're currently verifying
+</span><span class='line'>    that data is being submitted. You should see your Agent show up in Datadog
+</span><span class='line'>    shortly at:
+</span><span class='line'>
+</span><span class='line'>        https://app.datadoghq.com/infrastructure
+</span><span class='line'>
+</span><span class='line'>Waiting for metrics.................................
+</span><span class='line'>
+</span><span class='line'>    Success! Your Agent is functioning properly, and will continue to run
+</span><span class='line'>    in the foreground. To stop it, simply press CTRL-C. To start it back
+</span><span class='line'>    up again in the foreground, run:
+</span><span class='line'>
+</span><span class='line'>    cd /root/.datadog-agent
+</span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ここで、</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Datadogでサービスモニターリング [Agentのインストール]]]></title>
@@ -41,7 +148,7 @@
 
 <p>登録が完了すると次のようなdatadogのダッシュボードが表示されます。このダッシュボードで、integrationsタブにカーソルを移動しagentと項目を選択すると次のページが表示されます。</p>
 
-<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent os select" alt="datadog agent os select"></p>
 
 <p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのdatadog agentをインストールするためのコマンドが表示されます。</p>
 
@@ -83,13 +190,105 @@
 
 <p>コンソールにメッセージが表示されたところで、infrastructureタブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
 
-<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog infrastructure page" alt="datadog infrastructure page"></p>
 
 <p>サーバの名前をクリックすると、そのサーバに関して、datadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
 
-<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog target infra page" alt="datadog  target infra page"></p>
 
 <p>次回は、datadog agentが収集している基本メトリックス以外の情報をdatadogに送信しするための情報を解説します。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Trema Day #4 参加しました。]]></title>
+    <link href="http://jhotta.github.io/blog/2013/11/18/trema-day-4/"/>
+    <updated>2013-11-18T13:46:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/11/18/trema-day-4</id>
+    <content type="html"><![CDATA[<h2>基本情報:</h2>
+
+<ul>
+<li><a href="http://atnd.org/event/E0020713">Trema Day #4</a></li>
+</ul>
+
+
+<h3>関連情報:</h3>
+
+<ul>
+<li><a href="http://osrg.github.io/ryu/">Ryu</a></li>
+<li><a href="http://www.projectfloodlight.org/floodlight/">fooldlight</a></li>
+<li><a href="http://trema.github.io/trema/">trema</a></li>
+<li><a href="http://www.slideshare.net/stereocat55/tremafirewall">Tremaで試すfirewall</a></li>
+</ul>
+
+
+<h2>感想:</h2>
+
+<p>2013年のDevOps Day Londonで、John WillisがSDNのプレゼンをしていた。彼の話しによれば、現在のSDNを取巻く環境は、彼が2005年くらいにPuppet Labs, Opscodeで顧客としていた&#8221;仮想化, クラウド, 自動化&#8221;に関する会話と酷似ていると言っていた。もしも、10年サイクルでICTに新しいトレンドが来るとすると、SDNのトレンドは既に始まっており、丁度仮想化業界にPuppetが登場する前当たりではないかともコメントしていた。</p>
+
+<p>個人的には、計算能力とネットワーク転送力の比較をしてみると、転送力は明らかにスッペック不足のように感じる上、ネットワークエンジニア１人が管理しているネットワーク機器の数(1:120)は、オペレーションエンジニアが管理している計算ノードよりも圧倒的に少ない（FBでは、5名のシスアドミンで全体を管理）。 ”Infrastructure as Code”という概念には、当然ネットワークも自動化の対象として組み込まれないと完成しないと思う。</p>
+
+<p>ネットワークの知識が中途半端打であったため、SDNの勉強会に参加してプレゼンで話されている単語を拾うのが精一杯であったのだが、今後も引き続き勉強していこうと思わせる分野には間違いと感じることができた。</p>
+
+<h4>今後の行動指針:</h4>
+
+<ul>
+<li>NTTの研究所で開発されているRyuというコントローラーは、Pythonで書かれているらしくこの辺から勉強を始めたら理解出来るかな〜。</li>
+<li>Goで書かれている、FOSS系のOpenFlowのコントローラーがないか探してみたのですが、みあたらなかった見当たらなかった。日本の発のものはRubyとかPythonで書かれているけど、FOSSとしての配布のことを考えるとGoのほうが便利だから、なにか出来ないか〜。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Lean UX 入門セミナーへ参加しました。]]></title>
+    <link href="http://jhotta.github.io/blog/2013/11/13/lean-ux-seminar/"/>
+    <updated>2013-11-13T19:00:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/11/13/lean-ux-seminar</id>
+    <content type="html"><![CDATA[<h3>基本情報:</h3>
+
+<ul>
+<li><a href="http://connpass.com/event/3964/">Lean UX 入門セミナー</a></li>
+</ul>
+
+
+<h3>関連情報:</h3>
+
+<ul>
+<li><a href="http://www.amazon.co.jp/dp/B0074KA0A4">Lean UX: Applying Lean Principles to Improve User Experience</a></li>
+<li><a href="http://www.amazon.co.jp/dp/B00F3UTIQY">リーン・スタートアップ</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4873115914">Running Lean</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4798117552">アントレプレナーの教科書</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4798122971">ビジネスモデル・ジェネレーション ビジネスモデル設計書</a></li>
+<li><a href="http://www.jeffgothelf.com/blog/">Jeff Gothelf Blog</a></li>
+</ul>
+
+
+<h2>感想:</h2>
+
+<ul>
+<li>Leanが課題解決型の手法であるために、Lean UXも課題解決型のインクリメンタルな開発に向いていると感じた。この逆に、いずれゲームチェンジャーと認められるようなUXの革命を目指すなら、別の手法の選択もありと感じた。</li>
+<li>Leanの手法はイテレーションを前提としているため、外注を巻き込んでのプロジェクトの場合は、その初期の役割再確認や利害関係の再設計を念頭に置いた”場（こたつ）”づくりが、日本では特に重要と感じた。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[ここがテスト]]></title>
+    <link href="http://jhotta.github.io/blog/2013/07/29/test-of-me/"/>
+    <updated>2013-07-29T13:36:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/07/29/test-of-me</id>
+    <content type="html"><![CDATA[<p>ここに何を書こうか…</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Blog Post Template]]></title>
+    <link href="http://jhotta.github.io/blog/2013/01/01/blog-template/"/>
+    <updated>2013-01-01T01:01:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/01/01/blog-template</id>
+    <content type="html"><![CDATA[<p>ここに、blogに内容を書いていきます。</p>
 ]]></content>
   </entry>
   

@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Raspberry piにDatadog Agentをインストールしてみる - Etizolam</title>
+  <meta name="author" content="@jhotta">
+
+  
+  <meta name="description" content="日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。 ということでDD- &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Etizolam</a></h1>
+  
+    <h2>For our good night sleep.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jhotta.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Raspberry piにDatadog Agentをインストールしてみる</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-11T15:44:00+09:00" pubdate data-updated="true">Apr 11<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。</p>
+
+<p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
+
+<h2>Datadog Agentのインストール</h2>
+
+<p>まず最初に、DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行し、必要に応じてsysstatインストールしておく。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインする。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分のコマンドコピーする。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>このコマンドを、コンソールからroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span><span class='line'>                                 Dload  Upload   Total   Spent    Left  Speed
+</span><span class='line'>100   184  100   184    0     0    309      0 --:--:-- --:--:-- --:--:--   859
+</span><span class='line'>100 17616  100 17616    0     0  19108      0 --:--:-- --:--:-- --:--:-- 19108
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Installing Datadog Agent 4.2.1
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Creating Agent directory /root/.datadog-agent..... Done
+</span><span class='line'>Creating log file /root/.datadog-agent/ddagent-install.log.....Done
+</span><span class='line'>Setting up virtual environment.....Done
+</span><span class='line'>Setting up setuptools and pip.....Done
+</span><span class='line'>Installing tornado 2.4.1 using pip.....Done
+</span><span class='line'>Downloading the latest version of the Agent from github (~2.5 MB).....Done
+</span><span class='line'>Uncompressing the archive.....Done
+</span><span class='line'>Configuring datadog.conf file......Done
+</span><span class='line'>Setting up launching scripts.....Done
+</span><span class='line'>Setting up supervisor.....Done
+</span><span class='line'>Consolidating logging.....Done
+</span><span class='line'>Cleaning up the installation directory.....Done
+</span><span class='line'>Starting the Agent.....Done
+</span><span class='line'>
+</span><span class='line'>    Your Agent has started up for the first time. We're currently verifying
+</span><span class='line'>    that data is being submitted. You should see your Agent show up in Datadog
+</span><span class='line'>    shortly at:
+</span><span class='line'>
+</span><span class='line'>        https://app.datadoghq.com/infrastructure
+</span><span class='line'>
+</span><span class='line'>Waiting for metrics.................................
+</span><span class='line'>
+</span><span class='line'>    Success! Your Agent is functioning properly, and will continue to run
+</span><span class='line'>    in the foreground. To stop it, simply press CTRL-C. To start it back
+</span><span class='line'>    up again in the foreground, run:
+</span><span class='line'>
+</span><span class='line'>    cd /root/.datadog-agent
+</span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ここで、</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">@jhotta</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-11T15:44:00+09:00" pubdate data-updated="true">Apr 11<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/datadog/'>datadog</a>, <a class='category' href='/blog/categories/raspberry-pi/'>raspberry pi</a>, <a class='category' href='/blog/categories/monitaringu/'>モニターリング</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/04/08/install-datadog-agent/" title="Previous Post: Datadogでサービスモニターリング [agentのインストール]">&laquo; Datadogでサービスモニターリング [agentのインストール]</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/04/11/datadog-on-raspberry-pi/">Raspberry piにDatadog Agentをインストールしてみる</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/18/trema-day-4/">Trema Day #4 参加しました。</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/11/13/lean-ux-seminar/">Lean UX 入門セミナーへ参加しました。</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/07/29/test-of-me/">ここがテスト</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - @jhotta -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

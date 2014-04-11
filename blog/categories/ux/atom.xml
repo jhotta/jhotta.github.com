@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: UX | Etizolam]]></title>
+  <link href="http://jhotta.github.io/blog/categories/ux/atom.xml" rel="self"/>
+  <link href="http://jhotta.github.io/"/>
+  <updated>2014-04-11T16:35:17+09:00</updated>
+  <id>http://jhotta.github.io/</id>
+  <author>
+    <name><![CDATA[@jhotta]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Lean UX 入門セミナーへ参加しました。]]></title>
+    <link href="http://jhotta.github.io/blog/2013/11/13/lean-ux-seminar/"/>
+    <updated>2013-11-13T19:00:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2013/11/13/lean-ux-seminar</id>
+    <content type="html"><![CDATA[<h3>基本情報:</h3>
+
+<ul>
+<li><a href="http://connpass.com/event/3964/">Lean UX 入門セミナー</a></li>
+</ul>
+
+
+<h3>関連情報:</h3>
+
+<ul>
+<li><a href="http://www.amazon.co.jp/dp/B0074KA0A4">Lean UX: Applying Lean Principles to Improve User Experience</a></li>
+<li><a href="http://www.amazon.co.jp/dp/B00F3UTIQY">リーン・スタートアップ</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4873115914">Running Lean</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4798117552">アントレプレナーの教科書</a></li>
+<li><a href="http://www.amazon.co.jp/dp/4798122971">ビジネスモデル・ジェネレーション ビジネスモデル設計書</a></li>
+<li><a href="http://www.jeffgothelf.com/blog/">Jeff Gothelf Blog</a></li>
+</ul>
+
+
+<h2>感想:</h2>
+
+<ul>
+<li>Leanが課題解決型の手法であるために、Lean UXも課題解決型のインクリメンタルな開発に向いていると感じた。この逆に、いずれゲームチェンジャーと認められるようなUXの革命を目指すなら、別の手法の選択もありと感じた。</li>
+<li>Leanの手法はイテレーションを前提としているため、外注を巻き込んでのプロジェクトの場合は、その初期の役割再確認や利害関係の再設計を念頭に置いた”場（こたつ）”づくりが、日本では特に重要と感じた。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>
