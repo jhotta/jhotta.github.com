@@ -9,7 +9,7 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。 ということでDD- &hellip;">
+  <meta name="description" content="僕は、Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。 ということでDD- &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -71,7 +71,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/04/11/datadog-on-raspberry-pi/">Raspberry piにDatadog Agentをインストールしてみる</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/04/11/datadog-on-raspberry-pi/">Raspberry piにDatadog Agentをインストールしてみる(前編)</a></h1>
     
     
       <p class="meta">
@@ -94,27 +94,27 @@
   </header>
 
 
-  <div class="entry-content"><p>日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。</p>
+  <div class="entry-content"><p>僕は、Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
 
 <p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
 
 <h2>Datadog Agentのインストール</h2>
 
-<p>まず最初に、DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行し、必要に応じてsysstatインストールしておく。</p>
+<p>DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行しインストールの有無を確認し、必要に応じてsysstatインストールしておくことにします。</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
 
 
-<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインする。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
 
-<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分のコマンドコピーする。</p>
+<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
 
-<p>このコマンドを、コンソールからroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
+<p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -192,7 +192,7 @@
 </span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
 
 
-<p>ここで、</p>
+<p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
 </div>
   
   
@@ -233,7 +233,7 @@
 
 <p>数年に渡ってDatadogを見てきた僕としては、Datadogをもっと理解してもらうためには日本語の入門ポストを書くしかなと感じた。更に、いつも僕の要望に応えてくれるDatadog CTOのAlexisへの恩返しのためにもなるしね。</p>
 
-<p>更に僕のような3流プログラマーには、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックス収集と違って、かゆいところに手が届く仕様になっていると思うので、この醍醐味を少しでも多くのプログラマーに知ってもらいたいというのも動機を後押ししている気がする。</p>
+<p>更に僕のような3流プログラマーには、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックス収集と違って、かゆいところに手が届く仕様になっていると思うので、この醍醐味を少しでも多くのプログラマーに知ってもらいたいというのも動機を後押ししている。</p>
 
 <p>尚、今回Datadog agentをインストールするOSは、僕が使い慣れているUbuntuにする。基本的なサーバーメトリックスをDatadogに送信ができるようになったら、Datadogが提供しているPythonラッパーを使って、プログラム内から自分たち独自のデータをDatadogに送信しモニターリングたり、APIを使ってタイムラインにメッセージを表示したりするなど、初歩的で特徴的な使い方を紹介したいと思っている。</p>
 
@@ -257,7 +257,7 @@
 
 <p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
 
-<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりコマンドをroot権限で実行します。</p>
+<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりroot権限で実行します。</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>sudo DD_API_KEY={アカウントに紐づいたkey code} bash -c "$(curl -L http://dtdg.co/agent-install-ubuntu)"</span></code></pre></td></tr></table></div></figure>
@@ -520,7 +520,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/04/11/datadog-on-raspberry-pi/">Raspberry piにDatadog Agentをインストールしてみる</a>
+        <a href="/blog/2014/04/11/datadog-on-raspberry-pi/">Raspberry piにDatadog Agentをインストールしてみる(前編)</a>
       </li>
     
       <li class="post">

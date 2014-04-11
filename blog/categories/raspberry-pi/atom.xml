@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Raspberry Pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T16:35:17+09:00</updated>
+  <updated>2014-04-11T17:05:35+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -14,31 +14,31 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Raspberry piにDatadog Agentをインストールしてみる]]></title>
+    <title type="html"><![CDATA[Raspberry piにDatadog Agentをインストールしてみる(前編)]]></title>
     <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/"/>
     <updated>2014-04-11T15:44:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi</id>
-    <content type="html"><![CDATA[<p>日頃Raspberry PiでRasbianを扱っているけど、これって所詮Linuxじゃんなんて思っふと考えるとDatadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったりもした。</p>
+    <content type="html"><![CDATA[<p>僕は、Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
 
 <p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
 
 <h2>Datadog Agentのインストール</h2>
 
-<p>まず最初に、DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行し、必要に応じてsysstatインストールしておく。</p>
+<p>DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行しインストールの有無を確認し、必要に応じてsysstatインストールしておくことにします。</p>
 
 <p><code>
 sudo apt-get install sysstat
 </code></p>
 
-<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインする。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、Integrationsへカーソルを合わせるとプルダウンメニューが現れるので、Agentを選択する。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
-<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分のコマンドコピーする。</p>
+<p>左側にあるメニューの一番下のFrom Sourceを選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
-<p>このコマンドを、コンソールからroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
+<p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
 
 <p>```
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current</p>
@@ -84,7 +84,7 @@ sh bin/agent
 
 <p>```</p>
 
-<p>ここで、</p>
+<p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
 ]]></content>
   </entry>
   
