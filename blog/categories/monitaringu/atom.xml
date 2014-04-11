@@ -4,7 +4,7 @@
   <title><![CDATA[Category: モニターリング | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/monitaringu/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T17:55:27+09:00</updated>
+  <updated>2014-04-11T17:56:33+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Raspberry piにDatadog Agentをインストールしてみる(前編)]]></title>
+    <title type="html"><![CDATA[Raspberry piにもDatadog Agentをインストールしてみる(前編)]]></title>
     <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/"/>
     <updated>2014-04-11T15:44:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi</id>
