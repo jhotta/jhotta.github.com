@@ -4,7 +4,7 @@
   <title><![CDATA[Category: DevOps | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/devops/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T18:08:21+09:00</updated>
+  <updated>2014-04-11T18:09:13+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -77,7 +77,7 @@ background and submit metrics to Datadog.</p>
 
 <p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo;" ></p>
 
-<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="&lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo;" ></p>
 

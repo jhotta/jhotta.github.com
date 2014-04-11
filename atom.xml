@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T18:08:21+09:00</updated>
+  <updated>2014-04-11T18:09:13+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -196,7 +196,7 @@
 
 <p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog infrastructure page" alt="datadog infrastructure page"></p>
 
-<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示してページに遷移することが出来ます。</p>
+<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
 
 <p><img class="center" src="http://jhotta.github.io/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog target infra page" alt="datadog  target infra page"></p>
 
