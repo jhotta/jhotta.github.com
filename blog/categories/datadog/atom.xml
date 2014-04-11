@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T18:09:13+09:00</updated>
+  <updated>2014-04-11T18:09:39+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -152,7 +152,7 @@ background and submit metrics to Datadog.</p>
 
 <p>```</p>
 
-<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが追加されていることを確認します。</p>
+<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが表示されていることを確認します。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo;" ></p>
 
