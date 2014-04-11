@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Raspberry Pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-11T17:56:33+09:00</updated>
+  <updated>2014-04-11T17:59:29+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Raspberry piにもDatadog Agentをインストールしてみる(前編)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi/"/>
+    <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1/"/>
     <updated>2014-04-11T15:44:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi</id>
+    <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1</id>
     <content type="html"><![CDATA[<p>僕は、Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
 
 <p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
