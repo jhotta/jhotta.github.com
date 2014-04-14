@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-14T17:00:22+09:00</updated>
+  <updated>2014-04-14T17:01:45+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,33 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[Datadog Agent for Intel Galileo]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1/"/>
-    <updated>2014-04-14T16:54:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Datadog Sending Custom Metrics 1]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/"/>
-    <updated>2014-04-14T16:53:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Datadog Integrationsを追加する]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-integrations/"/>
-    <updated>2014-04-14T16:44:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-integrations</id>
-    <content type="html"><![CDATA[<p>あsdふぁsdふぁfd</p>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Raspberry piにもDatadog Agentをインストールしてみる(前編)]]></title>
