@@ -4,7 +4,7 @@
   <title><![CDATA[Category: DevOps | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/devops/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-14T17:24:39+09:00</updated>
+  <updated>2014-04-14T17:36:58+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -33,19 +33,19 @@
 
 <p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
 
-<p>{% img center /images/blog-images/datadog-top.png 800 800 &lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
 
 <p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
 
-<p>{% img center /images/blog-images/datadog-register.png 800 800 &lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="&lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo;" ></p>
 
 <p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
 
-<p>{% img center /images/blog-images/datadog-os-select.png 800 800 &lsquo;datadog agent os select&rsquo; &lsquo;datadog agent os select&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="&lsquo;datadog agent os select&rsquo; &lsquo;datadog agent os select&rsquo;" ></p>
 
 <p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
 
-<p>{% img center /images/blog-images/ubuntu-agent-install.png 800 800 &lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="&lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo;" ></p>
 
 <p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりroot権限で実行します。</p>
 
@@ -75,11 +75,11 @@ background and submit metrics to Datadog.</p>
 
 <p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが表示されていることを確認します。</p>
 
-<p>{% img center /images/blog-images/datadog-infrastructure.png 800 800 &lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo;" ></p>
 
 <p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
 
-<p>{% img center /images/blog-images/datadog-base-dash.png 800 800 &lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="&lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo;" ></p>
 
 <p>次回以降は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信するための情報を解説します。</p>
 ]]></content>

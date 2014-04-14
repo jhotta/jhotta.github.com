@@ -4,7 +4,7 @@
   <title><![CDATA[Category: raspberry pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-14T17:24:39+09:00</updated>
+  <updated>2014-04-14T17:36:58+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -32,11 +32,11 @@ sudo apt-get install sysstat
 
 <p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
 
-<p>{% img center /images/blog-images/datadog-integrations-source.png 800 800 &lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
 <p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
-<p>{% img center /images/blog-images/datadog-source-install.png 800 800 &lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
 
 <p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
 
@@ -86,7 +86,7 @@ sh bin/agent
 
 <p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎの写真みたいなグラフをDatadogのダッシュボードで見ることができます。</p>
 
-<p>{% img center /images/blog-images/dd-raspi.jpg 800 800 &lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo; %}</p>
+<p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
 ]]></content>
