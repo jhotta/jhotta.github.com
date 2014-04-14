@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Datadog | Etizolam]]></title>
+  <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-14T17:01:45+09:00</updated>
+  <updated>2014-04-14T17:24:39+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -32,11 +32,11 @@ sudo apt-get install sysstat
 
 <p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-integrations-source.png 800 800 &lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo; %}</p>
 
 <p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="&lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-source-install.png 800 800 &lsquo;datadog agent from source&rsquo; &lsquo;datadog agent from source&rsquo; %}</p>
 
 <p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
 
@@ -86,14 +86,14 @@ sh bin/agent
 
 <p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎの写真みたいなグラフをDatadogのダッシュボードで見ることができます。</p>
 
-<p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
+<p>{% img center /images/blog-images/dd-raspi.jpg 800 800 &lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo; %}</p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Datadogでサービスモニターリング [Agentのインストール]]]></title>
+    <title type="html"><![CDATA[Datadogでサービスモニターリング [agentのインストール]]]></title>
     <link href="http://jhotta.github.io/blog/2014/04/08/install-datadog-agent/"/>
     <updated>2014-04-08T19:11:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/08/install-datadog-agent</id>
@@ -112,19 +112,19 @@ sh bin/agent
 
 <p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="&lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-top.png 800 800 &lsquo;datadog top page&rsquo; &lsquo;datadog top page&rsquo; %}</p>
 
 <p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="&lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-register.png 800 800 &lsquo;datadog register page&rsquo; &lsquo;datadog register page&rsquo; %}</p>
 
 <p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="&lsquo;datadog agent os select&rsquo; &lsquo;datadog agent os select&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-os-select.png 800 800 &lsquo;datadog agent os select&rsquo; &lsquo;datadog agent os select&rsquo; %}</p>
 
 <p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
 
-<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="&lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo;" ></p>
+<p>{% img center /images/blog-images/ubuntu-agent-install.png 800 800 &lsquo;datadog agent install&rsquo; &lsquo;datadog agent install&rsquo; %}</p>
 
 <p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりroot権限で実行します。</p>
 
@@ -154,11 +154,11 @@ background and submit metrics to Datadog.</p>
 
 <p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが表示されていることを確認します。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="&lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-infrastructure.png 800 800 &lsquo;datadog infrastructure page&rsquo; &lsquo;datadog infrastructure page&rsquo; %}</p>
 
 <p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
 
-<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="&lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo;" ></p>
+<p>{% img center /images/blog-images/datadog-base-dash.png 800 800 &lsquo;datadog target infra page&rsquo; &lsquo;datadog  target infra page&rsquo; %}</p>
 
 <p>次回以降は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信するための情報を解説します。</p>
 ]]></content>
