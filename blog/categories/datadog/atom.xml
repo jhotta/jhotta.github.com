@@ -4,7 +4,7 @@
   <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-15T16:51:17+09:00</updated>
+  <updated>2014-04-15T17:01:50+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,277 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Datadog agentをIntel Galileoで動かす(前編)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1/"/>
+    <updated>2014-04-14T16:54:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1</id>
+    <content type="html"><![CDATA[<p><img class="right" src="/images/blog-images/intel_galileo.jpg" width="300" height="300" title="&lsquo;intel galileo&rsquo; &lsquo;intel galileo&rsquo;" ></p>
+
+<p>Datadog agent(以後DD-agent)が、Raspberry Piであっさり動いてしまったので、流行のIntel Galileo(以降Galileo)でもあっさり動くのではと思い挑戦してみました。
+結果から言うと<strong>「問題なく出来ます」</strong>、しかし、Raspberry Pi(Rasbian)の時のように、Datadogが用意してくれている１行コマンド行を実行すれば完成ということには成りませんでした。</p>
+
+<p>こういう時こそ情報の供給がだいじだと思うのでインストール方法を書き残しておくとにします。尚今回は、DD-agentとDogtatsDを起動させ、メトリックスをDatadogに送信しするところまでの手順を書きます。これらのスクリプトをGalileoの起動時に自動で起動する方法やGPIOからの情報を読み込み送信する方法は、後編で書こうと思います。</p>
+
+<h2>起動用のSDイメージについて</h2>
+
+<p>個人的に利用頻度が最も多い<a href="http://wiki.tokor.org/%20Tokoro's%20Tech-Note">Tokoro&rsquo;s Tech-Note</a>で公開されている<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>を利用します。</p>
+
+<p>このイメージの特徴は、arduino IDEは使えなくなるものの、linux系のlibでちょっとこれがあると便利かもというものがrepoから簡単に入手できることです。(Tokoro氏の善意に感謝します。)</p>
+
+<p>先の<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>をPCにダウンロードし解凍後、fat32でフォーマットした4G SDカート(4G以上のSDの場合は、4Gのパーティションを作成してください)に書き込めば、起動用のSDカードの準備は完了です。</p>
+
+<p>以下が解凍した<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>の中身です。
+<img class="center" src="/images/blog-images/SD-full-list.png" width="800" height="800" title="&lsquo;解凍したSDの中身&rsquo; &lsquo;SD full soft list&rsquo;" ></p>
+
+<p>準備ができたSDカードをGalileに差し込んで、LANケーブルと電源を指すと<a href="https://www.yoctoproject.org/%20yocto">Yocto linux</a>が起動してきます。LAN(eth0)は、IP addressを自動で取得する設定に成っているので、Galileoを接続したネットワークにDHCPサーバーが存在している必要があります。IP addressは、OSが起動したのを見計らってIPスキャナー<a href="https://itunes.apple.com/jp/app/lanscan/id472226235?mt=12%20LanSacan">LanScan</a>などでIntel GalileoのMACアドレスを探してIP addressを確認します。MACアドレスの情報は、LANコネクター口の上にシールで張られています。</p>
+
+<p>OSが起動しIP addressが分かったら、sshでGalileoに接続していきます。</p>
+
+<p><code>
+$ ssh root@X.X.X.X
+</code></p>
+
+<p>rootにはpasswordは設定されてないので、sshの接続手順が完了すると、一気に管理者権限のコンソールが表示されます。</p>
+
+<p><code>
+The authenticity of host '192.168.8.171 (192.168.8.171)' can't be established.
+RSA key fingerprint is 4d:5e:57:43:b0:02:6e:f3:ae:3c:1e:2c:7a:55:f5:4b.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'X.X.X.X' (RSA) to the list of known hosts.
+root@clanton:~#
+</code></p>
+
+<h2>DD-agent起動に足りないPackageのインストール</h2>
+
+<p>sshで接続ができたところで、まず最初にする作業は、Tokoroさんが提供してくれているPackageをopkgコマンドでインストールするためのrepo情報の追記です。</p>
+
+<p>既にrepo情報が追記された設定ファイルも公開されているので、下記のコマンドを実行して既存のrepo設定ファイルをTokoroさんのrepoの設定情報が記載された設定ファイルに置き換えます。</p>
+
+<p><code>
+wget http://storage.tokor.org/pub/galileo/packages/opkg.conf -O /etc/opkg/opkg.conf
+</code></p>
+
+<p>詳細に関しては、<a href="http://wiki.tokor.org/index.php?Intel%A4%CEGalileo%A4%C7%A5%D1%A5%C3%A5%B1%A1%BC%A5%B8%A5%DE%A5%CD%A1%BC%A5%B8%A5%E3opkg%A4%F2%BB%C8%A4%A6%A1%A1-%A1%A1Galileo">「IntelのGalileoでパッケージマネージャopkgを使う」</a>を参照してください。</p>
+
+<p>次に、Package情報を更新し、新しいバージョンのパッケージがあるものは最新に入れ替えておくことにします。</p>
+
+<p><code>
+opkg update
+opkg upgrade
+</code></p>
+
+<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、自動で時間が設定されるようにします。自動で時間を設定してくれるntpをPackageインストールします。</p>
+
+<p><code>
+opkg install ntp
+</code></p>
+
+<p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
+
+<p><code>
+opkg install sysstat
+</code></p>
+
+<p>DD-agentを起動するためのPackageの追加インストールは、これで終了です。</p>
+
+<h2>DD-agentのダウンロード</h2>
+
+<p>OSの準備ができたので、DD-agentをGithubから取得し、Galileoに設置します。
+Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のような検索結果が表示されます。</p>
+
+<p><img class="center" src="/images/blog-images/github-dd-agent.png" width="800" height="800" title="&lsquo;github dd-agent&rsquo; &lsquo;github dd-agent&rsquo;" ></p>
+
+<p>赤枠で囲った項目をダブルクリックして、Datadogが管理しているdd-agentのページに移動します。</p>
+
+<p><img class="center" src="/images/blog-images/github-dd-agent-dl.png" width="800" height="800" title="&lsquo;github dd-agent&rsquo; &lsquo;github dd-agent&rsquo;" ></p>
+
+<p><code>Download ZIP</code> ボタンを見つけ、右クリックを使ってリンク先URLをクリップボードに保存ます。</p>
+
+<p>Galileoのwgetコマンドでは、githubのCAの情報がうまく処理でないようなので<em>&mdash;no-check-certificate</em>をコマンドオプションに追記し実行します。</p>
+
+<p><code>
+wget --no-check-certificate https://github.com/DataDog/dd-agent/archive/master.zip
+</code></p>
+
+<p>ダウンロードが終わったらファイルを解凍し、起動の準備に入ります。</p>
+
+<p><code>
+unzip master.zip
+</code></p>
+
+<p>master.zipは、<code>dd-agent-master</code>というディレクトリ以下に展開されます。</p>
+
+<p><code>
+cd dd-agent-master
+</code></p>
+
+<p>ディレクトリを<code>ls</code>で表示してみると次の様になっているはずです。</p>
+
+<p><code>
+root@clanton:~/dd-agent-master# ls
+CHANGELOG.md    aggregator.py   dogstream  requirements.txt
+LICENSE     checks    emitter.py   resources
+LICENSE-boto    checks.d    ez_setup.py  setup.py
+LICENSE-httplib2  compat    graphite.py  supervisord.dev.conf
+LICENSE-minjson   conf.d    httplibproxy.py  tests
+LICENSE-ntplib    config.py   jmxfetch.py  transaction.py
+MANIFEST.in   daemon.py   migration.py   urllib2proxy.py
+README.markdown   datadog-cert.pem  minjson.py   util.py
+Rakefile    datadog.conf.example  modules.py   win32
+Vagrantfile   ddagent.py    packaging  yaml
+agent.py    dogstatsd.py    pup
+</code></p>
+
+<h2>API keyの取得</h2>
+
+<p>DatadogのAPIアクセスは、API keyを使って認証しています。このkey(文字列)情報は、DD-agentの起動時に設定ファイルから読み込む仕様になっているので、設置ファイルに事前に記述しておく必要があります。</p>
+
+<p>設定ファイルのサンプルが、dd-agent-masterディレクトリにあるので、このサンプルファイルをコピーして作業を始めます。</p>
+
+<p><code>
+cp datadog.conf.example datadog.conf
+</code></p>
+
+<p>次に、設定ファイルに書き込むためのAPI keyを<a href="https://app.datadoghq.com/account/settings#api">Datadog APIs</a>ページから取得します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-apikey.png" width="800" height="800" title="&lsquo;datadog apikey&rsquo; &lsquo;datadog apikey&rsquo;" ></p>
+
+<p>API keyの文字列が分かったところで、設定ファイルの編集をします</p>
+
+<p><code>
+vi datadog.conf
+</code></p>
+
+<p>設定ファイルの18行目にある、<code>api_key:</code>の後ろに先のページで取得したAPI keyをペーストします。</p>
+
+<p>```
+[Main]</p>
+
+<h1>The host of the Datadog intake server to send Agent data to</h1>
+
+<p>dd_url: <a href="https://app.datadoghq.com">https://app.datadoghq.com</a></p>
+
+<h1>If you need a proxy to connect to the Internet, provide the settings here</h1>
+
+<h1>proxy_host: my-proxy.com</h1>
+
+<h1>proxy_port: 3128</h1>
+
+<h1>proxy_user: user</h1>
+
+<h1>proxy_password: password</h1>
+
+<h1>If you run the agent behind haproxy, you might want to set this to yes</h1>
+
+<h1>skip_ssl_validation: no</h1>
+
+<h1>The Datadog api key to associate your Agent&rsquo;s data with your organization.</h1>
+
+<h1>Can be found here:</h1>
+
+<h1><a href="https://app.datadoghq.com/account/settings">https://app.datadoghq.com/account/settings</a></h1>
+
+<p>api_key:
+```</p>
+
+<p>これで設定ファイルの追記も完了です。</p>
+
+<h2>Agentの動作確認</h2>
+
+<p>それでは、Agentをフォワグランドで起動してみます。</p>
+
+<p><code>
+cd ~/dd-agent-master
+python agent.py start
+</code></p>
+
+<p>しばらくすると、Datadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページ上に<strong>clanton</strong>(Galileoに設定したホスト名)というホスト名が追加されます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-infra-clanton.png" width="800" height="800" title="&lsquo;datadog clanton&rsquo; &lsquo;datadog clanton&rsquo;" ></p>
+
+<p>ホスト名をダブルクリックすると、sysstatが収集しているGalileoの基本メトリックスがグラフ化されて表示されるはずです。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-clanton.png" width="800" height="800" title="&lsquo;datadog clanton&rsquo; &lsquo;datadog clanton&rsquo;" ></p>
+
+<p>無事グラフが表示されていることが確認できたら、<code>ctrl+C</code>でAgentを停止し、バックグラウンドで起動します。</p>
+
+<p><code>
+python agent.py start &amp;
+</code></p>
+
+<h2>DogtatsDの動作確認</h2>
+
+<p>次に、任意のメトリックスを手軽に転送するためにDogStatsを起動することにします。</p>
+
+<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">Stats</a>の派生バージョンです。StatsDは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアです。</p>
+
+<p>同様の目的でDogStatsDを使うことで、プログラムの中からDatadogのサービスに任意のメトリックスを簡単に転送することができます。メトリックスさえ転送できてしまえば、後はDatadogのダッシュボード機能を使って、集めたメトリックスをリアルタイムに処理&amp;可視化できるという文脈になります。</p>
+
+<p>既に設定ファイルへのAPI keyの追記は済んでいるので、次のようにバックグランドで起動します。</p>
+
+<p><code>
+cd ~/dd-agent-master
+python dogstatsd.py start &amp;
+</code></p>
+
+<p>任意のメトリックスをプログラムの中からDogStatsDを介してDatadogに送信ができたかを確認するためには、次のような簡単なプログムを書きます。</p>
+
+<p>pythonの場合は、Datadogが提供しているDogStatsDのラッパーライブラリーがPIPにあるので次のようにインストールすることにします。</p>
+
+<p><code>
+cd ~/dd-agent-master
+python ez_setup.py
+easy_isntall pip
+pip install dogstatsd-python
+</code></p>
+
+<p>dogstatsd-pythonのインストールが無事インストールが成功したら、<strong>dogstatsd-test.py</strong>などのファイル名で次のファイルのようなpythonスクリプトを書きます。</p>
+
+<p>```</p>
+
+<h1>! /usr/bin/env python</h1>
+
+<p>from statsd import statsd
+import time
+import random</p>
+
+<p>def mysleep():</p>
+
+<pre><code>statsd.increment('myapp.testsleep')
+sleep_time = random.uniform(0.0, 0.9)
+# print sleep_time
+time.sleep(sleep_time)
+</code></pre>
+
+<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&rdquo;:</p>
+
+<pre><code>while(1):
+    mysleep();
+</code></pre>
+
+<p>```</p>
+
+<p>pythonスクリプトが書き上がったところで実行してみます。</p>
+
+<p><code>
+python dogstatsd-test.py
+</code></p>
+
+<p>コンソールに大量の<em>sleep</em>文字列が出力されます。バックグラウンドではsleepが表示された回数をカウントして、一定時間ごとにそのカウント値をDatadogに転送しています。</p>
+
+<p>先に見たDatadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページの<strong>clanton</strong>の行の右端にmyappという青いラベルが増えていることが確認できたら、ダブルクリックしmyappの名前スペースのメトリックスを表示するページに移動します。</p>
+
+<p>今は、myappの名前スペースに１種類のメトリックスしかないので、次のようなグラフが表示されれば、動作確認は完了です。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-myapp-testsleep.png" width="800" height="800" title="&lsquo;datadog myapp testsleep&rsquo; &lsquo;datadog myapp testsleep&rsquo;" ></p>
+
+<h2>まとめ</h2>
+
+<p>ここまで前編は終わりです。内容が理解できれば30分以内でできてしまうインストール作業ではないかと思います。こんな簡単な作業で、GPIOで集めた情報も可視化できるなんて素晴しいと思いませんか。後半では、GalileoのGPIO関連ライブラリーと任意のメトリックスの取り扱いに関して書いていこうと思います。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Raspberry piにもDatadog Agentをインストールしてみる(前編)]]></title>
