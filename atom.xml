@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-15T20:38:39+09:00</updated>
+  <updated>2014-04-15T23:57:19+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -241,7 +241,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
 <p>次に、任意のメトリックスを手軽に転送するためにDogStatsを起動することにします。</p>
 
-<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">Stats</a>の派生バージョンです。StatsDは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアです。</p>
+<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>の派生バージョンです。StatsDは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアです。</p>
 
 <p>同様の目的でDogStatsDを使うことで、プログラムの中からDatadogのサービスに任意のメトリックスを簡単に転送することができます。メトリックスさえ転送できてしまえば、後はDatadogのダッシュボード機能を使って、集めたメトリックスをリアルタイムに処理&amp;可視化できるという文脈になります。</p>
 
