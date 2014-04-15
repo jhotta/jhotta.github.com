@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-15T17:49:00+09:00</updated>
+  <updated>2014-04-15T20:37:05+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -429,6 +429,37 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 <p><img class="center" src="http://jhotta.github.io/images/blog-images/dd-raspi.jpg" width="800" height="800" title="datadog dash & raspi" alt="datadog dash & raspi"></p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
+
+<h5>追記 2014/04/15:</h5>
+
+<p>僕の環境では、次のDatadog-agentのコマンドオプションを実行したところ、tornado.httpserverのimportエラーが出ました。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo su
+</span><span class='line'># cd /root/.datadog-agent/bin
+</span><span class='line'># ./agent info</span></code></pre></td></tr></table></div></figure>
+
+
+<p>途中のメッセージは飛ばし、エラー部分だけを表示します。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Traceback (most recent call last):
+</span><span class='line'>  File "agent/ddagent.py", line 32, in &lt;module&gt;
+</span><span class='line'>    import tornado.httpserver
+</span><span class='line'>ImportError: No module named tornado.httpserver
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次のコマンドのようにtornadoをpipでインストールすることで、先のエラーは解決しました。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># pip install tornado</span></code></pre></td></tr></table></div></figure>
+
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: IoT | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/iot/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-15T17:49:00+09:00</updated>
+  <updated>2014-04-15T20:37:05+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -360,6 +360,36 @@ sh bin/agent
 <p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
+
+<h5>追記 2014/04/15:</h5>
+
+<p>僕の環境では、次のDatadog-agentのコマンドオプションを実行したところ、tornado.httpserverのimportエラーが出ました。</p>
+
+<p>```
+$ sudo su</p>
+
+<h1>cd /root/.datadog-agent/bin</h1>
+
+<h1>./agent info</h1>
+
+<p><code>
+途中のメッセージは飛ばし、エラー部分だけを表示します。
+</code>
+Traceback (most recent call last):
+  File &ldquo;agent/ddagent.py&rdquo;, line 32, in <module></p>
+
+<pre><code>import tornado.httpserver
+</code></pre>
+
+<p>ImportError: No module named tornado.httpserver</p>
+
+<p><code>
+次のコマンドのようにtornadoをpipでインストールすることで、先のエラーは解決しました。
+</code></p>
+
+<h1>pip install tornado</h1>
+
+<p>```</p>
 ]]></content>
   </entry>
   
