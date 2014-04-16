@@ -9,10 +9,8 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="基本情報: Trema Day #4 関連情報: Ryu
-fooldlight
-trema
-Tremaで試すfirewall 感想: 2013年のDevOps Day Londonで、John WillisがSDNのプレゼンをしていた。彼の話しによれば、現在のSDNを取巻く環境は、 &hellip;">
+  <meta name="description" content="世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がしてならない。
+しかしながら、僕が2013 Pycon APACの時に使った写真主体のDatadogスライドには、定期的に閲覧が発生している。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +79,113 @@ Tremaで試すfirewall 感想: 2013年のDevOps Day Londonで、John WillisがSD
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-08T19:11:00+09:00" pubdate data-updated="true">Apr 8<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がしてならない。
+しかしながら、僕が2013 Pycon APACの時に使った写真主体のDatadogスライドには、定期的に閲覧が発生している。</p>
+
+<p>数年に渡ってDatadogを見てきた僕としては、Datadogをもっと理解してもらうためには日本語の入門ポストを書くしかなと感じた。更に、いつも僕の要望に応えてくれるDatadog CTOのAlexisへの恩返しのためにもなるしね。</p>
+
+<p>更に僕のような3流プログラマーには、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックス収集と違って、かゆいところに手が届く仕様になっていると思うので、この醍醐味を少しでも多くのプログラマーに知ってもらいたいというのも動機を後押ししている。</p>
+
+<p>尚、今回Datadog agentをインストールするOSは、僕が使い慣れているUbuntuにする。基本的なサーバーメトリックスをDatadogに送信ができるようになったら、Datadogが提供しているPythonラッパーを使って、プログラム内から自分たち独自のデータをDatadogに送信しモニターリングたり、APIを使ってタイムラインにメッセージを表示したりするなど、初歩的で特徴的な使い方を紹介したいと思っている。</p>
+
+<h2>UbuntuにDatadog agentをインストール</h2>
+
+<p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
+
+<p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
+
+<p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="datadog register page" alt="datadog register page"></p>
+
+<p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent os select" alt="datadog agent os select"></p>
+
+<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
+
+<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
+
+<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりroot権限で実行します。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo DD_API_KEY={アカウントに紐づいたkey code} bash -c "$(curl -L http://dtdg.co/agent-install-ubuntu)"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>インストール作業が順調に作業が進んで、Datadogへデータを送信できたことが確認が取れると次のメッセージがコンソールに表示されます。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Waiting for metrics.................................
+</span><span class='line'>
+</span><span class='line'>Your Agent is running and functioning properly. It will continue to run in the
+</span><span class='line'>background and submit metrics to Datadog.
+</span><span class='line'>
+</span><span class='line'>If you ever want to stop the Agent, run:
+</span><span class='line'>
+</span><span class='line'>    sudo /etc/init.d/datadog-agent stop
+</span><span class='line'>
+</span><span class='line'>And to run it again run:
+</span><span class='line'>
+</span><span class='line'>    sudo /etc/init.d/datadog-agent start</span></code></pre></td></tr></table></div></figure>
+
+
+<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが表示されていることを確認します。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog infrastructure page" alt="datadog infrastructure page"></p>
+
+<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog target infra page" alt="datadog  target infra page"></p>
+
+<p>次回以降は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信するための情報を解説します。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -226,6 +331,10 @@ Tremaで試すfirewall 感想: 2013年のDevOps Day Londonで、John WillisがSD
     
       <li class="post">
         <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a>
       </li>
     
       <li class="post">

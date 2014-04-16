@@ -416,6 +416,60 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-14T16:44:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。</p>
+
+<p>Datadogにloginし、ダッシュボードから<code>Integrations</code>にカーソルを移動し、ドロップダウンら<code>Integrations</code>を選択すると次のページに移動することができます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-integrations.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
+
+<p>各タイルにカーソルを合わせると、Integrationの解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
+
+<p>Configurationタブを選択して、各Integrationに必要な設定項目を入力し<code>Install Integration</code>をクリックします。</p>
+
+<p>Integrationにの種類によっては、サーバー側の設定必要なものもあります。その設情報は、Configurationページに詳細に記載されています。そのインストラクションに従ってステップ・バイ・スッテプで設定してください。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-integrations-add.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
+
+<p>インストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。以後、設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定できます。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-integrations-installed.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
+
+<p>Configurationが正しくできてメトリックスがDatadog側で受信できていれば、しばらくすると<code>Infrastracture</code>ページにメトリックスを表示するための青いラベルが追加されます。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></h1>
     
     
@@ -580,113 +634,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-08T19:11:00+09:00" pubdate data-updated="true">Apr 8<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がしてならない。
-しかしながら、僕が2013 Pycon APACの時に使った写真主体のDatadogスライドには、定期的に閲覧が発生している。</p>
-
-<p>数年に渡ってDatadogを見てきた僕としては、Datadogをもっと理解してもらうためには日本語の入門ポストを書くしかなと感じた。更に、いつも僕の要望に応えてくれるDatadog CTOのAlexisへの恩返しのためにもなるしね。</p>
-
-<p>更に僕のような3流プログラマーには、収集したいメトリックスをプログラマー自身がコード内で設定できる仕組みは、New Relicの決め打メトリックス収集と違って、かゆいところに手が届く仕様になっていると思うので、この醍醐味を少しでも多くのプログラマーに知ってもらいたいというのも動機を後押ししている。</p>
-
-<p>尚、今回Datadog agentをインストールするOSは、僕が使い慣れているUbuntuにする。基本的なサーバーメトリックスをDatadogに送信ができるようになったら、Datadogが提供しているPythonラッパーを使って、プログラム内から自分たち独自のデータをDatadogに送信しモニターリングたり、APIを使ってタイムラインにメッセージを表示したりするなど、初歩的で特徴的な使い方を紹介したいと思っている。</p>
-
-<h2>UbuntuにDatadog agentをインストール</h2>
-
-<p>Windows, OSX, linuxなどの一般的なOSを利用していれば、agentのインストールは非常に簡単です。</p>
-
-<p>まず最初にDatadogのアカウントを取得します。右上隅の<code>FREE TRIAL</code>ボタンをクリックし、登録情報の入力画面に遷移します。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-top.png" width="800" height="800" title="datadog top page" alt="datadog top page"></p>
-
-<p>一通り情報を入力し、<code>Sing up</code>ボタンをクリックし登録を完了します。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-register.png" width="800" height="800" title="datadog register page" alt="datadog register page"></p>
-
-<p>登録が完了すると次のようなDatadogのダッシュボードが表示されます。このダッシュボードで、<code>Integrations</code>タブにカーソルを移動し<code>Agent</code>と項目を選択すると次のページが表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-os-select.png" width="800" height="800" title="datadog agent os select" alt="datadog agent os select"></p>
-
-<p>僕は、ubuntuを使っているので、ページ内でubuntuを選択すると、ubuntu向けのDatadog agentをインストールするためのコマンドが表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/ubuntu-agent-install.png" width="800" height="800" title="datadog agent install" alt="datadog agent install"></p>
-
-<p>インストール手順のページから上記の赤く囲った部分をコピーし、 サーバのコンソールよりroot権限で実行します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo DD_API_KEY={アカウントに紐づいたkey code} bash -c "$(curl -L http://dtdg.co/agent-install-ubuntu)"</span></code></pre></td></tr></table></div></figure>
-
-
-<p>インストール作業が順調に作業が進んで、Datadogへデータを送信できたことが確認が取れると次のメッセージがコンソールに表示されます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Waiting for metrics.................................
-</span><span class='line'>
-</span><span class='line'>Your Agent is running and functioning properly. It will continue to run in the
-</span><span class='line'>background and submit metrics to Datadog.
-</span><span class='line'>
-</span><span class='line'>If you ever want to stop the Agent, run:
-</span><span class='line'>
-</span><span class='line'>    sudo /etc/init.d/datadog-agent stop
-</span><span class='line'>
-</span><span class='line'>And to run it again run:
-</span><span class='line'>
-</span><span class='line'>    sudo /etc/init.d/datadog-agent start</span></code></pre></td></tr></table></div></figure>
-
-
-<p>コンソールにメッセージが表示されたところで、<code>Infrastructure</code>タブへ移動し、新しく追加したサーバが表示されていることを確認します。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-infrastructure.png" width="800" height="800" title="datadog infrastructure page" alt="datadog infrastructure page"></p>
-
-<p>サーバの名前をクリックすると、そのサーバに関してDatadog agentが集めている基本メトリックスを表示しているページに遷移することができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-base-dash.png" width="800" height="800" title="datadog target infra page" alt="datadog  target infra page"></p>
-
-<p>次回以降は、Datadog agentが収集している基本メトリックス以外の情報をDatadogに送信するための情報を解説します。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -703,6 +650,10 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     
       <li class="post">
         <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a>
       </li>
     
       <li class="post">
