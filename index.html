@@ -359,7 +359,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
 <p>dogstatsd-pythonのインストールが無事インストールが成功したら、<strong>dogstatsd-test.py</strong>などのファイル名で次のファイルのようなpythonスクリプトを書きます。</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -374,27 +374,29 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 <span class='line-number'>13</span>
 <span class='line-number'>14</span>
 <span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>#! /usr/bin/env python
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#! /usr/bin/env python</span>
 </span><span class='line'>
-</span><span class='line'>from statsd import statsd
-</span><span class='line'>import time
-</span><span class='line'>import random
+</span><span class='line'><span class="kn">from</span> <span class="nn">statsd</span> <span class="kn">import</span> <span class="n">statsd</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">time</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">random</span>
 </span><span class='line'>
-</span><span class='line'>def mysleep():
-</span><span class='line'>    statsd.increment('myapp.testsleep')
-</span><span class='line'>    sleep_time = random.uniform(0.0, 0.9)
-</span><span class='line'>    # print sleep_time
-</span><span class='line'>    time.sleep(sleep_time)
+</span><span class='line'><span class="k">def</span> <span class="nf">mysleep</span><span class="p">():</span>
+</span><span class='line'>    <span class="n">statsd</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="s">&#39;myapp.testsleep&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">sleep_time</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">sleep_time</span>
+</span><span class='line'>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">)</span>
 </span><span class='line'>
-</span><span class='line'>if __name__ == "__main__":
-</span><span class='line'>    while(1):
-</span><span class='line'>        mysleep();</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">mysleep</span><span class="p">();</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>pythonスクリプトが書き上がったところで実行してみます。</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>python dogstatsd-test.py</span></code></pre></td></tr></table></div></figure>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">python</span> <span class="n">dogstatsd</span><span class="o">-</span><span class="n">test</span><span class="o">.</span><span class="n">py</span>
+</span></code></pre></td></tr></table></div></figure>
 
 
 <p>コンソールに大量の<em>sleep</em>文字列が出力されます。バックグラウンドではsleepが表示された回数をカウントして、一定時間ごとにそのカウント値をDatadogに転送しています。</p>

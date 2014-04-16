@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Intel | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/intel/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-15T23:57:19+09:00</updated>
+  <updated>2014-04-16T09:48:38+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -240,7 +240,7 @@ pip install dogstatsd-python
 
 <p>dogstatsd-pythonのインストールが無事インストールが成功したら、<strong>dogstatsd-test.py</strong>などのファイル名で次のファイルのようなpythonスクリプトを書きます。</p>
 
-<p>```</p>
+<p>```python</p>
 
 <h1>! /usr/bin/env python</h1>
 
@@ -252,7 +252,7 @@ import random</p>
 
 <pre><code>statsd.increment('myapp.testsleep')
 sleep_time = random.uniform(0.0, 0.9)
-# print sleep_time
+print sleep_time
 time.sleep(sleep_time)
 </code></pre>
 
