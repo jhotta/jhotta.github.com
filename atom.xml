@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-16T09:48:38+09:00</updated>
+  <updated>2014-04-16T10:02:13+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -293,7 +293,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 </span><span class='line'><span class="k">def</span> <span class="nf">mysleep</span><span class="p">():</span>
 </span><span class='line'>    <span class="n">statsd</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="s">&#39;myapp.testsleep&#39;</span><span class="p">)</span>
 </span><span class='line'>    <span class="n">sleep_time</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">print</span> <span class="n">sleep_time</span>
+</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;sleep: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">sleep_time</span>
 </span><span class='line'>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">)</span>
 </span><span class='line'>
 </span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
