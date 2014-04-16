@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-16T10:02:13+09:00</updated>
+  <updated>2014-04-16T10:44:11+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -191,7 +191,7 @@ vi datadog.conf
 
 <h2>Agentの動作確認</h2>
 
-<p>それでは、Agentをフォワグランドで起動してみます。</p>
+<p>それでは、Agentを起動してみます。</p>
 
 <p><code>
 cd ~/dd-agent-master
@@ -206,12 +206,6 @@ python agent.py start
 
 <p><img class="center" src="/images/blog-images/datadog-clanton.png" width="800" height="800" title="&lsquo;datadog clanton&rsquo; &lsquo;datadog clanton&rsquo;" ></p>
 
-<p>無事グラフが表示されていることが確認できたら、<code>ctrl+C</code>でAgentを停止し、バックグラウンドで起動します。</p>
-
-<p><code>
-python agent.py start &amp;
-</code></p>
-
 <h2>DogtatsDの動作確認</h2>
 
 <p>次に、任意のメトリックスを手軽に転送するためにDogStatsを起動することにします。</p>
@@ -220,11 +214,11 @@ python agent.py start &amp;
 
 <p>同様の目的でDogStatsDを使うことで、プログラムの中からDatadogのサービスに任意のメトリックスを簡単に転送することができます。メトリックスさえ転送できてしまえば、後はDatadogのダッシュボード機能を使って、集めたメトリックスをリアルタイムに処理&amp;可視化できるという文脈になります。</p>
 
-<p>既に設定ファイルへのAPI keyの追記は済んでいるので、次のようにバックグランドで起動します。</p>
+<p>既に設定ファイルへのAPI keyの追記は済んでいるので、次のように起動します。</p>
 
 <p><code>
 cd ~/dd-agent-master
-python dogstatsd.py start &amp;
+python dogstatsd.py start
 </code></p>
 
 <p>任意のメトリックスをプログラムの中からDogStatsDを介してDatadogに送信ができたかを確認するためには、次のような簡単なプログムを書きます。</p>
