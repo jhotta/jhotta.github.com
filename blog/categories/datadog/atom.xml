@@ -4,7 +4,7 @@
   <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-16T15:11:13+09:00</updated>
+  <updated>2014-04-17T17:03:19+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -285,19 +285,19 @@ python dogstatsd-test.py
     <id>http://jhotta.github.io/blog/2014/04/14/datadog-integrations</id>
     <content type="html"><![CDATA[<p>DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。</p>
 
-<p>Datadogにloginし、ダッシュボードから<code>Integrations</code>にカーソルを移動し、ドロップダウンら<code>Integrations</code>を選択すると次のページに移動することができます。</p>
+<p>Datadogにloginし、ダッシュボードから<code>Integrations</code> タブにカーソルを移動し、ドロップダウンから<code>Integrations</code>を選択すると次のページに移動することができます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations.png" width="800" height="800" title="&lsquo;datadog integrations&rsquo; &lsquo;datadog integrations&rsquo;" ></p>
 
-<p>各タイルにカーソルを合わせると、Integrationの解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
-
-<p>Configurationタブを選択して、各Integrationに必要な設定項目を入力し<code>Install Integration</code>をクリックします。</p>
-
-<p>Integrationにの種類によっては、サーバー側の設定必要なものもあります。その設情報は、Configurationページに詳細に記載されています。そのインストラクションに従ってステップ・バイ・スッテプで設定してください。</p>
+<p>各Instarationのタイルにカーソルを合わせると、その解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-add.png" width="800" height="800" title="&lsquo;datadog integrations&rsquo; &lsquo;datadog integrations&rsquo;" ></p>
 
-<p>インストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。以後、設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定できます。</p>
+<p>Configurationタブを選択して、設定項目を入力し<code>Install Integration</code>をクリックします。</p>
+
+<p>Integrationの種類によっては、サーバー側の設定が必要なものもあります。その情報は、Configurationページで詳細に記載されています。その手順に従って設定作業を完了しておいてください。</p>
+
+<p>Datadog側でIntagrationのインストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。後に設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定することで、新しい設定を反映させるとことができます。</p>
 
 <p><img class="center" src="/images/blog-images/datadog-integrations-installed.png" width="800" height="800" title="&lsquo;datadog integrations&rsquo; &lsquo;datadog integrations&rsquo;" ></p>
 
