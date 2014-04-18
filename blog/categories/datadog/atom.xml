@@ -4,7 +4,7 @@
   <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T17:27:00+09:00</updated>
+  <updated>2014-04-18T19:00:37+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -79,6 +79,28 @@ opkg upgrade
 opkg install ntpdate
 ntpdate ntpdate ntp.nict.jp
 </code></p>
+
+<p>次に、ntpdもインストールして設定しておきます。</p>
+
+<p><code>
+opkg install ntp
+</code></p>
+
+<p>ntpの設定ファイルを編集します。</p>
+
+<p><code>
+vi /etc/ntpd.conf
+</code></p>
+
+<p><em># server time.server.example.com</em>と書かれている行をコメントアウトし、次のように公開されているntpサーバー名を記載します。</p>
+
+<p>```</p>
+
+<h1>server time.server.example.com</h1>
+
+<p>server ntp.nict.jp
+server 0.asia.pool.ntp.org
+```</p>
 
 <p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
 

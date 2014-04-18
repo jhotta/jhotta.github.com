@@ -175,6 +175,28 @@
 </span><span class='line'>ntpdate ntpdate ntp.nict.jp</span></code></pre></td></tr></table></div></figure>
 
 
+<p>次に、ntpdもインストールして設定しておきます。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install ntp</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ntpの設定ファイルを編集します。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vi /etc/ntpd.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em># server time.server.example.com</em>と書かれている行をコメントアウトし、次のように公開されているntpサーバー名を記載します。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># server time.server.example.com
+</span><span class='line'>server ntp.nict.jp
+</span><span class='line'>server 0.asia.pool.ntp.org</span></code></pre></td></tr></table></div></figure>
+
+
 <p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
