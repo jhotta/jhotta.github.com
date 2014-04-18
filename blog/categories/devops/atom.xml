@@ -4,7 +4,7 @@
   <title><![CDATA[Category: DevOps | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/devops/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T16:11:59+09:00</updated>
+  <updated>2014-04-18T16:18:07+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,15 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[Datadogに任意のメトリックスを送信する (その1)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/"/>
-    <updated>2014-04-14T16:53:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Datadog Integrationsを追加する]]></title>

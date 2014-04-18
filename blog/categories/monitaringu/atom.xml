@@ -4,7 +4,7 @@
   <title><![CDATA[Category: モニターリング | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/monitaringu/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T16:11:59+09:00</updated>
+  <updated>2014-04-18T16:18:07+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -191,7 +191,7 @@ vi datadog.conf
 
 <h2>Agentの動作確認</h2>
 
-<p>実際にAgentを起動する前にdatadog関連のデーモンがlogを出力する先のディレクトリーを準備しておきます。</p>
+<p>Agentを起動する前にdatadog関連のデーモンがlogを出力する先のディレクトリーを準備しておきます。</p>
 
 <p><code>
 mkdir /var/log/datadog
@@ -281,15 +281,6 @@ python dogstatsd-test.py
 <h2>まとめ</h2>
 
 <p>ここまでで前編は終わりです。内容が理解できれば30分以内でできてしまうインストール作業ではないかと思います。こんな簡単な作業で、GPIOで集めた情報も可視化できるなんて素晴しいと思いませんか。後半では、GalileoのGPIO関連ライブラリーと任意のメトリックスの取り扱いに関して書いていこうと思います。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Datadogに任意のメトリックスを送信する (その1)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/"/>
-    <updated>2014-04-14T16:53:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1</id>
-    <content type="html"><![CDATA[
 ]]></content>
   </entry>
   
