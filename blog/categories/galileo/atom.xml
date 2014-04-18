@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T19:00:37+09:00</updated>
+  <updated>2014-04-18T19:02:29+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -304,6 +304,11 @@ python dogstatsd-test.py
 <h2>まとめ</h2>
 
 <p>ここまでで前編は終わりです。内容が理解できれば30分以内でできてしまうインストール作業ではないかと思います。こんな簡単な作業で、GPIOで集めた情報も可視化できるなんて素晴しいと思いませんか。後半では、GalileoのGPIO関連ライブラリーと任意のメトリックスの取り扱いに関して書いていこうと思います。</p>
+
+<ul>
+<li>2014/04/18 ntpdate、及びntpの設定に関連する記述を変更しました。</li>
+</ul>
+
 ]]></content>
   </entry>
   
