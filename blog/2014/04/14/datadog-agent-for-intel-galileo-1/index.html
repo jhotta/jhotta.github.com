@@ -167,10 +167,12 @@
 </span><span class='line'>opkg upgrade</span></code></pre></td></tr></table></div></figure>
 
 
-<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、自動で時間が設定されるようにします。自動で時間を設定してくれるntpをPackageインストールします。</p>
+<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、簡単に時間が設定されるようにします。自動で時間を設定してくれるntpdateをPackageインストールします。</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install ntp</span></code></pre></td></tr></table></div></figure>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install ntpdate
+</span><span class='line'>ntpdate ntpdate ntp.nict.jp</span></code></pre></td></tr></table></div></figure>
 
 
 <p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>

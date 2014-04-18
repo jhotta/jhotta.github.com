@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T16:18:07+09:00</updated>
+  <updated>2014-04-18T17:27:00+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -73,10 +73,11 @@ opkg update
 opkg upgrade
 </code></p>
 
-<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、自動で時間が設定されるようにします。自動で時間を設定してくれるntpをPackageインストールします。</p>
+<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、簡単に時間が設定されるようにします。自動で時間を設定してくれるntpdateをPackageインストールします。</p>
 
 <p><code>
-opkg install ntp
+opkg install ntpdate
+ntpdate ntpdate ntp.nict.jp
 </code></p>
 
 <p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
