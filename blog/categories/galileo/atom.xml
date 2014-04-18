@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T10:24:25+09:00</updated>
+  <updated>2014-04-18T16:11:59+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -190,6 +190,12 @@ vi datadog.conf
 <p>これで設定ファイルの追記も完了です。</p>
 
 <h2>Agentの動作確認</h2>
+
+<p>実際にAgentを起動する前にdatadog関連のデーモンがlogを出力する先のディレクトリーを準備しておきます。</p>
+
+<p><code>
+mkdir /var/log/datadog
+</code></p>
 
 <p>それでは、Agentを起動してみます。</p>
 

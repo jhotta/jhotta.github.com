@@ -5,14 +5,14 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Datadog Integrationsを追加する - Etizolam</title>
+  <title>Datadogに任意のメトリックスを送信する (その1) - Etizolam</title>
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。 &hellip;">
+  <meta name="description" content="">
   
 
-  <meta name="description" content="DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。 &hellip;">
+  <meta name="description" content="">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -21,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jhotta.github.io/blog/2014/04/14/datadog-integrations">
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
@@ -84,7 +84,7 @@
   
   <header>
     
-      <h1 class="entry-title">Datadog Integrationsを追加する</h1>
+      <h1 class="entry-title">Datadogに任意のメトリックスを送信する (その1)</h1>
     
     
       <p class="meta">
@@ -100,32 +100,14 @@
   
 
 
-<time datetime="2014-04-14T16:44:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
+<time datetime="2014-04-14T16:53:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。</p>
-
-<p>Datadogにloginし、ダッシュボードから<code>Integrations</code> タブにカーソルを移動し、ドロップダウンから<code>Integrations</code>を選択すると次のページに移動することができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>各Instarationのタイルにカーソルを合わせると、その解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-add.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationタブを選択して、設定項目を入力し<code>Install Integration</code>をクリックします。</p>
-
-<p>Integrationの種類によっては、サーバー側の設定が必要なものもあります。その情報は、Configurationページで詳細に記載されています。その手順に従って設定作業を完了しておいてください。</p>
-
-<p>Datadog側でIntagrationのインストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。後に設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定することで、新しい設定を反映させるとことができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-installed.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationが正しくできてメトリックスがDatadog側で受信できていれば、しばらくすると<code>Infrastracture</code>ページにメトリックスを表示するための青いラベルが追加されます。</p>
+<div class="entry-content">
 </div>
 
 
@@ -148,12 +130,12 @@
   
 
 
-<time datetime="2014-04-14T16:44:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
+<time datetime="2014-04-14T16:53:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/devops/'>DevOps</a>, <a class='category' href='/blog/categories/datadog/'>datadog</a>, <a class='category' href='/blog/categories/monitaringu/'>モニターリング</a>
+    <a class='category' href='/blog/categories/devops/'>DevOps</a>, <a class='category' href='/blog/categories/iot/'>IoT</a>, <a class='category' href='/blog/categories/datadog/'>datadog</a>, <a class='category' href='/blog/categories/monitaringu/'>モニターリング</a>
   
 </span>
 
@@ -162,7 +144,7 @@
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/04/14/datadog-integrations/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/04/14/datadog-integrations/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/" >Tweet</a>
   
   
   
@@ -173,10 +155,10 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/04/11/datadog-on-raspberry-pi-1/" title="Previous Post: Raspberry piにもDatadog Agentをインストールしてみる(前編)">&laquo; Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>
+        <a class="basic-alignment left" href="/blog/2014/04/14/datadog-integrations/" title="Previous Post: Datadog Integrationsを追加する">&laquo; Datadog Integrationsを追加する</a>
       
       
-        <a class="basic-alignment right" href="/blog/2014/04/14/datadog-sending-custom-metrics-1/" title="Next Post: Datadogに任意のメトリックスを送信する (その1)">Datadogに任意のメトリックスを送信する (その1) &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/" title="Next Post: Datadog agentをIntel Galileoで動かす(前編)">Datadog agentをIntel Galileoで動かす(前編) &raquo;</a>
       
     </p>
   </footer>
