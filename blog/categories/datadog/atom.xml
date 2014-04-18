@@ -4,7 +4,7 @@
   <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-18T19:02:29+09:00</updated>
+  <updated>2014-04-18T19:04:48+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -89,7 +89,7 @@ opkg install ntp
 <p>ntpの設定ファイルを編集します。</p>
 
 <p><code>
-vi /etc/ntpd.conf
+vi /etc/ntp.conf
 </code></p>
 
 <p><em># server time.server.example.com</em>と書かれている行をコメントアウトし、次のように公開されているntpサーバー名を記載します。</p>
