@@ -4,7 +4,7 @@
   <title><![CDATA[Category: DevOps | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/devops/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-24T21:09:38+09:00</updated>
+  <updated>2014-04-24T21:31:38+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Datadogに任意のメトリックスを送信する (その1)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/"/>
-    <updated>2014-04-14T16:53:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1</id>
+    <link href="http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1/"/>
+    <updated>2014-04-24T16:53:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1</id>
     <content type="html"><![CDATA[<p>Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。</p>
 
 <p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを実装したメトリクス集積サーバ(a metrics aggregation server)です。DogStatsDは、DD-agentに同胞されているので、既にDD-agentが動作していればすぐに使うことができます。(但し、Intel Galileoのようにデーモンを手動で起動するケースは、dogstatsdを起動している必要があります。)</p>

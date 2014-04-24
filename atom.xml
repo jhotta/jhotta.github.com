@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-24T21:09:38+09:00</updated>
+  <updated>2014-04-24T21:31:38+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,62 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Datadogに任意のメトリックスを送信する (その1)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1/"/>
+    <updated>2014-04-24T16:53:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1</id>
+    <content type="html"><![CDATA[<p>Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。</p>
+
+<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを実装したメトリクス集積サーバ(a metrics aggregation server)です。DogStatsDは、DD-agentに同胞されているので、既にDD-agentが動作していればすぐに使うことができます。(但し、Intel Galileoのようにデーモンを手動で起動するケースは、dogstatsdを起動している必要があります。)</p>
+
+<p><em>StatsD及びStatsDプロトコルは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアとプロトコルです。</em></p>
+
+<p><img class="center" src="http://jhotta.github.io/images/blog-images/dogstatsd.png" width="800" height="800" title="DogStatsD" alt="DogStatsD"></p>
+
+<p>DogStatsDは、アプリケーションからUDPで受け取ったメトリックスを一旦ホスト内で蓄積します。その後一定時間ことに、DatadogのサイトにHTTPSで送信します。Datagogのサイトでは、DogStatsDから受けとったメトリックスも名前スペースとタグ付によって管理され、他のメトリックスと同様にグラフ化することができるようになっています。</p>
+
+<p>DogStatsDとの通信がなぜUDPかというという事に関しては、「この間の通信の障害や遅延によってアプリケーションの動作をストールさせないため」と書いてありました。</p>
+
+<h3>DogStatsDのラッパーライブラリーについて</h3>
+
+<p>DogStatsDへのメトリックス送信手続きを簡素化するために、一般的な言語向けにラッパーライブラリーが提供されています。これらのラッパーライブラリーを活用すると数行のコード追加で任意メトリックスをDogStatsDに転送することができます。</p>
+
+<p>以下に代表的なライブラリーを紹介しておきます。</p>
+
+<h4>Datadogによって提供されているライブラリー</h4>
+
+<p><strong>Python: </strong>
+<a href="https://github.com/DataDog/dogstatsd-python">dogstatsd-python</a> &ndash; Python DogStatsD client.</p>
+
+<p><strong>Ruby: </strong>
+<a href="https://github.com/DataDog/dogstatsd-ruby">dogstatsd-ruby</a> &ndash; Ruby DogStatsD client.</p>
+
+<p><strong>PHP: </strong>
+<a href="https://github.com/DataDog/php-datadogstatsd">php-datadogstatsd</a> &ndash; PHP DogStatsD client.</p>
+
+<p><strong>C#: </strong>
+<a href="https://github.com/DataDog/dogstatsd-csharp-client">dogstatsd-csharp-client</a> &ndash; C# DogStatsD client.</p>
+
+<h4>コミュニティーによって提供されいるライブラリー</h4>
+
+<p><strong>Java: </strong>
+<a href="https://github.com/indeedeng/java-dogstatsd-client">java-dogstatsd-client</a> &ndash; DogStatsD Client for Java, <a href="https://github.com/indeedeng">Indeed</a>提供.</p>
+
+<p><strong>Node.js: </strong>
+<a href="https://github.com/joybro/node-dogstatsd">node-dogstatsd</a> &ndash; Node.js DogStatsD client, <a href="https://github.com/joybro">Young Han Lee</a>提供.</p>
+
+<p><strong>Perl: </strong>
+<a href="https://github.com/zipkid/dogstatsd-perl">dogstatsd-perl</a> &ndash; Perl DogStatsD client, <a href="https://github.com/zipkid">Stefan Goethals</a>提供.</p>
+
+<p><strong>Ruby: </strong>
+<a href="https://github.com/mavenlink/metriks-dogstatsd">metricks-dogstatsd</a> &ndash; backend for the popular Metriks gem, <a href="https://github.com/mavenlink">Mavenlink</a>提供.</p>
+
+<p><strong>Go: </strong>
+<a href="https://github.com/ooyala/go-dogstatsd/">go-dogstatsd</a> &ndash; dogstatsd client written in Go, <a href="https://github.com/ooyala">Ooyala</a>提供.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Datadog agentをIntel Galileoで動かす(前編)]]></title>
@@ -349,62 +405,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 <li>2014/04/18 ntpdate、及びntpの設定に関連する記述を変更しました。</li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Datadogに任意のメトリックスを送信する (その1)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1/"/>
-    <updated>2014-04-14T16:53:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-sending-custom-metrics-1</id>
-    <content type="html"><![CDATA[<p>Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。</p>
-
-<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを実装したメトリクス集積サーバ(a metrics aggregation server)です。DogStatsDは、DD-agentに同胞されているので、既にDD-agentが動作していればすぐに使うことができます。(但し、Intel Galileoのようにデーモンを手動で起動するケースは、dogstatsdを起動している必要があります。)</p>
-
-<p><em>StatsD及びStatsDプロトコルは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアとプロトコルです。</em></p>
-
-<p><img class="center" src="http://jhotta.github.io/images/blog-images/dogstatsd.png" width="800" height="800" title="DogStatsD" alt="DogStatsD"></p>
-
-<p>DogStatsDは、アプリケーションからUDPで受け取ったメトリックスを一旦ホスト内で蓄積します。その後一定時間ことに、DatadogのサイトにHTTPSで送信します。Datagogのサイトでは、DogStatsDから受けとったメトリックスも名前スペースとタグ付によって管理され、他のメトリックスと同様にグラフ化することができるようになっています。</p>
-
-<p>DogStatsDとの通信がなぜUDPかというという事に関しては、「この間の通信の障害や遅延によってアプリケーションの動作をストールさせないため」と書いてありました。</p>
-
-<h3>DogStatsDのラッパーライブラリーについて</h3>
-
-<p>DogStatsDへのメトリックス送信手続きを簡素化するために、一般的な言語向けにラッパーライブラリーが提供されています。これらのラッパーライブラリーを活用すると数行のコード追加で任意メトリックスをDogStatsDに転送することができます。</p>
-
-<p>以下に代表的なライブラリーを紹介しておきます。</p>
-
-<h4>Datadogによって提供されているライブラリー</h4>
-
-<p><strong>Python: </strong>
-<a href="https://github.com/DataDog/dogstatsd-python">dogstatsd-python</a> &ndash; Python DogStatsD client.</p>
-
-<p><strong>Ruby: </strong>
-<a href="https://github.com/DataDog/dogstatsd-ruby">dogstatsd-ruby</a> &ndash; Ruby DogStatsD client.</p>
-
-<p><strong>PHP: </strong>
-<a href="https://github.com/DataDog/php-datadogstatsd">php-datadogstatsd</a> &ndash; PHP DogStatsD client.</p>
-
-<p><strong>C#: </strong>
-<a href="https://github.com/DataDog/dogstatsd-csharp-client">dogstatsd-csharp-client</a> &ndash; C# DogStatsD client.</p>
-
-<h4>コミュニティーによって提供されいるライブラリー</h4>
-
-<p><strong>Java: </strong>
-<a href="https://github.com/indeedeng/java-dogstatsd-client">java-dogstatsd-client</a> &ndash; DogStatsD Client for Java, <a href="https://github.com/indeedeng">Indeed</a>提供.</p>
-
-<p><strong>Node.js: </strong>
-<a href="https://github.com/joybro/node-dogstatsd">node-dogstatsd</a> &ndash; Node.js DogStatsD client, <a href="https://github.com/joybro">Young Han Lee</a>提供.</p>
-
-<p><strong>Perl: </strong>
-<a href="https://github.com/zipkid/dogstatsd-perl">dogstatsd-perl</a> &ndash; Perl DogStatsD client, <a href="https://github.com/zipkid">Stefan Goethals</a>提供.</p>
-
-<p><strong>Ruby: </strong>
-<a href="https://github.com/mavenlink/metriks-dogstatsd">metricks-dogstatsd</a> &ndash; backend for the popular Metriks gem, <a href="https://github.com/mavenlink">Mavenlink</a>提供.</p>
-
-<p><strong>Go: </strong>
-<a href="https://github.com/ooyala/go-dogstatsd/">go-dogstatsd</a> &ndash; dogstatsd client written in Go, <a href="https://github.com/ooyala">Ooyala</a>提供.</p>
 ]]></content>
   </entry>
   
