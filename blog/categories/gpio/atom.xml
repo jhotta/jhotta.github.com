@@ -4,7 +4,7 @@
   <title><![CDATA[Category: GPIO | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/gpio/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-25T21:19:43+09:00</updated>
+  <updated>2014-04-25T22:02:52+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -258,7 +258,7 @@ Linuxベースの開発経験を持ったエンジニアもGPIOを操作して�
     <link href="http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/"/>
     <updated>2014-04-24T23:03:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python</id>
-    <content type="html"><![CDATA[<p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになる。</p>
+    <content type="html"><![CDATA[<p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになります。</p>
 
 <p>しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、Galileoの優位性はLinuxの有志が提供してくれている各種ソフトとarduino互換GPIOの連携と勝手に思い込んでいるので、IDEを使わずにGPIOの操作ができないかと調べた結果をまとめてみます。</p>
 
