@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Intel | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/intel/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-25T21:11:12+09:00</updated>
+  <updated>2014-04-25T21:19:43+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -18,7 +18,9 @@
     <link href="http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/"/>
     <updated>2014-04-25T19:20:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2</id>
-    <content type="html"><![CDATA[<h2>GPOIを便利に使うためのラッパーライブラリー</h2>
+    <content type="html"><![CDATA[<p><a href="https://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>の続きです。GalileoのGPIOの基礎知識は、プログラムのDebugに必要です。</p>
+
+<h2>GPOIを便利に使うためのラッパーライブラリー</h2>
 
 <p>やるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。</p>
 
@@ -468,6 +470,8 @@ echo -n "5" &gt; /sys/class/pwm/pwmchip0/unexport
 <h2>まとめ</h2>
 
 <p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIOを操を確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+
+<p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
 ]]></content>
   </entry>
   
