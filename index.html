@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
+  <meta name="description" content="GPOIを便利に使うためのラッパーライブラリーやるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。Galileoには、Node.jsとPythonが既に実装されているので、 &hellip;">
   
 
-  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
+  <meta name="description" content="GPOIを便利に使うためのラッパーライブラリーやるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。Galileoには、Node.jsとPythonが既に実装されているので、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,627 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-25T19:20:00+09:00" pubdate data-updated="true">Apr 25<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>GPOIを便利に使うためのラッパーライブラリー</h2>
+
+<p>やるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。</p>
+
+<p>Galileoには、Node.jsとPythonが既に実装されているので、これら二つのプログラミング言語について掲載します。</p>
+
+<h3>Node.js:</h3>
+
+<ul>
+<li><a href="https://github.com/wupsbr/galileo-gpio/network">galileo-gpio</a> (Lチカでつまずいて、JSが得意でない僕は先を断念）</li>
+<li><a href="https://github.com/sajirdalas/virginia-io">virginia-io</a> (未だ動作テストしていません)</li>
+</ul>
+
+
+<h3>Python:</h3>
+
+<ul>
+<li><a href="https://github.com/galileo-chofrock/pyGalileo">pyGalileo</a> オリジナル版</li>
+<li><a href="https://github.com/jhotta/pyGalileo">pyGalileo</a> jhottaの自力バグ修正版</li>
+</ul>
+
+
+<p><em>Intelさん正式版のGPIOの仕様書の参照先を教えてください。jhottaの自力修正版に反映したいと思います〜。</em></p>
+
+<h2>Pythonスクリプトの例</h2>
+
+<p>僕は、Node.jsでのプログラミングは得意ではないので先に紹介したライブラリーを使いこなせていません。従って、ここからはpyGalileoを使って進めることにします。</p>
+
+<h3>1. 準備</h3>
+
+<p>これから書いていくプログラムを管理するディレクトリを作りし、pyGalileoをDLし、解凍しておきます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mkdir myapps
+</span><span class='line'><span class="nb">cd </span>myapps
+</span><span class='line'>wget --no-check-certificate https://github.com/jhotta/pyGalileo/archive/master.zip
+</span><span class='line'>unzip master.zip
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Pythonのライブラリーとしてimportする際に、<code>-master</code>は不要なので、ディレクトリ名前を変更しておきます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mv pyGalileo-master/ pyGalileo
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>2. 外部からコールできるpyGalileoの関数</h3>
+
+<p>次にpyGalileoが準備している関数を紹介します。</p>
+
+<ul>
+<li><p><strong>pinMide(pin, direction)</strong></p>
+
+<p>  digitalピンの設定を書き込むファイルの準備と、出力又は入力でのピン利用を設定する。</p></li>
+<li><p><strong>digitalWrite(pin, value)</strong></p>
+
+<p>  digitalピンのHIGH,LOW設定。文字列&#8221;HIGH&#8221;,&ldquo;LOW&#8221;をvalueに設定する。</p></li>
+<li><p><strong>digitalRead(pin)</strong></p>
+
+<p>  digitalピンのIGH,LOWを読み込む。</p></li>
+<li><p><strong>analogWrite(pin, value)</strong></p>
+
+<p>  digitalピンのPWM出力を使って、出力を制御する。0~255のintをvalueに設定する。</p></li>
+<li><p><strong>analogRead(pin)</strong></p>
+
+<p>  analogピンの値を読み込む。</p></li>
+<li><p><strong>delay(msTime)</strong></p>
+
+<p>  ミリ秒の遅延設定する。</p></li>
+<li><p><strong>micros()</strong></p>
+
+<p>  マイクロ秒単位で現在時刻を表示する。</p></li>
+<li><p><strong>millis()</strong></p>
+
+<p>  ミリ秒単位で現在時刻を表示する。</p></li>
+</ul>
+
+
+<h3>3. Pythonで書くGPIO経由のLチカ(Digital input &amp; LED)</h3>
+
+<p>D4に接続したボタンスイッチで、D5に接続したLEDを点灯する例です。ボタンスイッチを押すと、LEDが点灯します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
+</span><span class='line'>vi digital.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital.pyの内容は次のようになります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">buttonPin</span> <span class="o">=</span> <span class="mi">4</span>
+</span><span class='line'><span class="n">ledPin</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span class='line'><span class="n">buttonState</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
+</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">buttonPin</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
+</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">buttonState</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="n">buttonPin</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">buttonState</span> <span class="o">==</span> <span class="n">HIGH</span><span class="p">:</span>
+</span><span class='line'>      <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>      <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
+</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>実行してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./digital.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>4. Pythonで書くGPIO経由のLチカ(Analog input &amp; LED)</h3>
+
+<p>A2に接続したボリューム抵抗で、D5に接続したLEDの点灯間隔を変化させる例です。ボユームを回すと、LEDの点灯間隔が変化します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
+</span><span class='line'>vi analog.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>analog.pyの内容は次のようになります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">sensorPin</span> <span class="o">=</span> <span class="n">A2</span>
+</span><span class='line'><span class="n">ledPin</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span class='line'><span class="n">sensorValue</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
+</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
+</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">sensorValue</span> <span class="o">=</span> <span class="n">analogRead</span><span class="p">(</span><span class="n">sensorPin</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">print</span><span class="p">(</span><span class="s">&quot;sensorValue:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">))</span>
+</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
+</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>実行してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./analog.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>5. Pythonで書くGPIO経由のPWM</h3>
+
+<p>D5に接続したLEDの照度を、duty_cycle(仕事率)を変化させることで変化させる例です。LEDが照度が上り/下がる状態を繰り返します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
+</span><span class='line'>vi pwm.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>pwm.pyの内容は次のようになります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">led</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span class='line'><span class="n">brightness</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'><span class="n">fadeAmount</span> <span class="o">=</span> <span class="mi">5</span>    <span class="c"># フェード量</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
+</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">led</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
+</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">analogWrite</span><span class="p">(</span><span class="n">led</span><span class="p">,</span> <span class="n">brightness</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">brightness</span> <span class="o">=</span> <span class="n">brightness</span> <span class="o">+</span> <span class="n">fadeAmount</span>
+</span><span class='line'>    <span class="c"># フェード方向の反転</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">brightness</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">brightness</span> <span class="o">==</span> <span class="mi">255</span><span class="p">:</span>
+</span><span class='line'>      <span class="n">fadeAmount</span> <span class="o">=</span> <span class="o">-</span><span class="n">fadeAmount</span>
+</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
+</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>実行してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./pwm.py
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>まとめ</h3>
+
+<p>一般的なプログラミング言語によるGalileoのGPIOの操作は、IDEで開発するのと大差がないのが提示できたと思います。</p>
+
+<p>ポストの最初にも書いたようにGalileoのメリットは、既存のLinux資産を活かしGPIOをどのように使っていくかだと思います。
+Linuxベースの開発経験を持ったエンジニアもGPIOを操作して、IoTの世界で僕らの未来を作るような開発をしてもらえると幸いです。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-24T23:03:00+09:00" pubdate data-updated="true">Apr 24<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになる。</p>
+
+<p>しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、Galileoの優位性はLinuxの有志が提供してくれている各種ソフトとarduino互換GPIOの連携と勝手に思い込んでいるので、IDEを使わずにGPIOの操作ができないかと調べた結果をまとめてみます。</p>
+
+<h2>Galileo GPIOの仕様もどき</h2>
+
+<p>Intel社みたいな大手企業なら何処かに正式な仕様書が存在していると思うのだが、googleで検索しても僕はそれらしきものを見つけることができなかった。しかしながら、次のSergey氏のサイトに書かれている内容を参照するとGPIOの動作が理解できます。</p>
+
+<p><a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Intel Galileo &ndash; Programming GPIO From Linux</a></p>
+
+<p><a href="https://www.yoctoproject.org/">Yocto Project</a>のLinuxで動作しているGalileoも、<a href="http://www.raspberrypi.org/">Raspberry Pi</a>等と同じように、特定の場所のファイルに対し設定内容を書き込めば、GPIOの目的ピンに意図している設定は反映されるようになっています。</p>
+
+<p>GPIOの設定内容を書き込むファイルの場所は次のディレクトリになります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /sys/class/
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>まず、ディレクトリ移動して内容を見てみましょう。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@clanton:/sys/class# ls
+</span><span class='line'>backlight cpuid      input     net       scsi_generic   tty
+</span><span class='line'>bdi   dma      mdio_bus  pci_bus       scsi_host      udc
+</span><span class='line'>block   firmware     mem       power_supply  spi_host     uio
+</span><span class='line'>bluetooth gpio       misc      pwm       spi_master     vc
+</span><span class='line'>bsg   i2c-adapter  mmc_host  rfkill      spi_transport  vtconsole
+</span><span class='line'>cln_esram_test  i2c-dev      msr       scsi_device   spidev
+</span><span class='line'>cln_imr_test  ieee80211    mtd       scsi_disk     thermal
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>GPIOピンの設定は、gpioディレクトリとpwmディレクトリ以下にあるファイルに書き込み操作をすることによって行います。</p>
+
+<p>各ピンの設定詳細に関しては、先に紹介した<a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Sergey氏のサイト</a>の図表を参照してください。</p>
+
+<h2>コンソール入力でGPIOピンを操作してみる</h2>
+
+<h3>1.Digital 出力</h3>
+
+<p>digital 5ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、出力設定なので<code>direction</code>ファイルに<code>out</code>(出力)と書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>信号の出力モードを設定します。LEDを付けるなどの一般用途では<code>strong</code>を使います。詳細に関しては、先のサイトを参照してください。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ピン出力のHIGH, LOWは、<code>value</code>ファイルへ<code>1</code>と<code>0</code>を書き込むことで操作します。1=HIGH, 0=LOWです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにLEDを接続すれば、Lチカができます。</p>
+
+<h3>2.Digital 入力</h3>
+
+<p>digital 5ピンを入力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、入力設定なので<code>direction</code>ファイルに<code>in</code>(入力)と書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;in&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>信号の出力モードを設定します。先の資料には、<code>strong</code>で問題と書かれていますが、僕の手元の環境では再現できませんでした。<strong>僕の環境では、<code>hiz</code>の設定をしたときのみです。</strong>従って、ここでは、<code>hiz</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;hiz&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>value</code>ファイルに、HIGH=1, LOW=0で値が書かれているのを確認してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにボタンスイッチ等を接続し、ON/OFFしファイルを状態をcatしてみましょう。</p>
+
+<h3>3.Analog 出力</h3>
+
+<p>digital 5ピンをPWM出力として使用するための設定をしてみます。</p>
+
+<p>次の4ステップは、Digital出力を準備するのと同じです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>PWMの設定する前は、該当ピンの出力が確実にLOWでなっているように設定しておきます。</em></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWM出力の準備を始めます。Digital 5ピンのPWMチャネルが5番であることを、先の対応図表で確認します。
+(以下の各コマンド内の<code>5</code>は、PWMチャネル番号です。)</p>
+
+<p><code>/sys/class/pwm/pwmchip0/export</code>に対して、pwmチャネル番号<code>5</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>/sys/class/pwm/pwmchip0/enable</code>に対して、<code>1</code>(有効)を書き込みます。
+<code>1</code>=有効,<code>0</code>=無効です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/enable
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWMの周期時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/period</code>へ書き込みます。<code>1900000</code>は、IDEがPWMに設定していた周期時間です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1900000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/period
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWMのHIGHの時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/duty_cycle</code>へ書き込みます。<code>800000</code>は、50%の仕事率を設定しています。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;800000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/duty_cycle
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一通りPWMの設定が済んだところで、<code>/sys/class/gpio/gpio17/value</code>をHIGHにします。(PWMが動作している間に<code>value</code>をcatしてみると、<code>1</code>か<code>0</code>が出力されます。)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにLEDを接続すれば、LEDが50%の照度で点灯ができます。
+<code>duty_cycle</code>の数値を変更すると、LEDの照度が変わります。</p>
+
+<h3>4.Analog 入力</h3>
+
+<p>Analog A0ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のanalog A0ピンは、複数の機能をMUXで切り替えるようになっています。
+gpio番号としては37番に書き込みをすることによって、A0ピンをAD7298 ADCのICに接続することができます。</p>
+
+<p>今までと同じように、<code>export</code>ファイルに<code>37</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;37&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>MUXを設定するための<code>gpio37/direction</code>を<code>out</code>(出力)に設定します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio37/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>gpio37/value</code>を、<code>0</code>(LOW)にしAD7298 ADCにA0入力を接続します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio37/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>/sys/bus/iio/devices/iio\:device0/in_voltage0_raw</code>をcatすることで、A0入力を読み取ります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/bus/iio/devices/iio<span class="se">\:</span>device0/in_voltage0_raw
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ボリューム抵抗等をA0に接続し、catを繰り返すと数値が変化していることが確認できます。</p>
+
+<h3>5.使用したピンの後処理</h3>
+
+<p>ピンの利用解除は、次に示すようにgpioディレクトリかpwmのディレクトリの unxport ファイルに、該当GPIO番号かPWMチャネル番号の書き出して処理します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/unexport
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/unexport
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>まとめ</h2>
+
+<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIOを操を確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -165,426 +786,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-14T16:54:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img class="right" src="/images/blog-images/intel_galileo.jpg" width="300" height="300" title="intel galileo" alt="intel galileo"></p>
-
-<p>Datadog agent(以後DD-agent)が、Raspberry Piであっさり動いてしまったので、流行のIntel Galileo(以降Galileo)でもあっさり動くのではと思い挑戦してみました。
-結果から言うと<strong>「問題なく出来ます」</strong>、しかし、Raspberry Pi(Rasbian)の時のように、Datadogが用意してくれている１行コマンド行を実行すれば完成ということには成りませんでした。</p>
-
-<p>こういう時こそ情報の供給がだいじだと思うのでインストール方法を書き残しておくとにします。尚今回は、DD-agentとDogtatsDを起動させ、メトリックスをDatadogに送信しするところまでの手順を書きます。これらのスクリプトをGalileoの起動時に自動で起動する方法やGPIOからの情報を読み込み送信する方法は、後編で書こうと思います。</p>
-
-<h2>起動用のSDイメージについて</h2>
-
-<p>個人的に利用頻度が最も多い<a href="http://wiki.tokor.org/%20Tokoro's%20Tech-Note">Tokoro&rsquo;s Tech-Note</a>で公開されている<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>を利用します。</p>
-
-<p>このイメージの特徴は、arduino IDEは使えなくなるものの、linux系のlibでちょっとこれがあると便利かもというものがrepoから簡単に入手できることです。(Tokoro氏の善意に感謝します。)</p>
-
-<p>先の<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>をPCにダウンロードし解凍後、fat32でフォーマットした4G SDカート(4G以上のSDの場合は、4Gのパーティションを作成してください)に書き込めば、起動用のSDカードの準備は完了です。</p>
-
-<p>以下が解凍した<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>の中身です。
-<img class="center" src="/images/blog-images/SD-full-list.png" width="800" height="800" title="解凍したSDの中身" alt="SD full soft list"></p>
-
-<p>準備ができたSDカードをGalileに差し込んで、LANケーブルと電源を指すと<a href="https://www.yoctoproject.org/%20yocto">Yocto linux</a>が起動してきます。LAN(eth0)は、IP addressを自動で取得する設定に成っているので、Galileoを接続したネットワークにDHCPサーバーが存在している必要があります。IP addressは、OSが起動したのを見計らってIPスキャナー<a href="https://itunes.apple.com/jp/app/lanscan/id472226235?mt=12%20LanSacan">LanScan</a>などでIntel GalileoのMACアドレスを探してIP addressを確認します。MACアドレスの情報は、LANコネクター口の上にシールで張られています。</p>
-
-<p>OSが起動しIP addressが分かったら、sshでGalileoに接続していきます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>$ ssh root@X.X.X.X</span></code></pre></td></tr></table></div></figure>
-
-
-<p>rootにはpasswordは設定されてないので、sshの接続手順が完了すると、一気に管理者権限のコンソールが表示されます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>The authenticity of host '192.168.8.171 (192.168.8.171)' can't be established.
-</span><span class='line'>RSA key fingerprint is 4d:5e:57:43:b0:02:6e:f3:ae:3c:1e:2c:7a:55:f5:4b.
-</span><span class='line'>Are you sure you want to continue connecting (yes/no)? yes
-</span><span class='line'>Warning: Permanently added 'X.X.X.X' (RSA) to the list of known hosts.
-</span><span class='line'>root@clanton:~#</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>DD-agent起動に足りないPackageのインストール</h2>
-
-<p>sshで接続ができたところで、まず最初にする作業は、Tokoroさんが提供してくれているPackageをopkgコマンドでインストールするためのrepo情報の追記です。</p>
-
-<p>既にrepo情報が追記された設定ファイルも公開されているので、下記のコマンドを実行して既存のrepo設定ファイルをTokoroさんのrepoの設定情報が記載された設定ファイルに置き換えます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>wget http://storage.tokor.org/pub/galileo/packages/opkg.conf -O /etc/opkg/opkg.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>詳細に関しては、<a href="http://wiki.tokor.org/index.php?Intel%A4%CEGalileo%A4%C7%A5%D1%A5%C3%A5%B1%A1%BC%A5%B8%A5%DE%A5%CD%A1%BC%A5%B8%A5%E3opkg%A4%F2%BB%C8%A4%A6%A1%A1-%A1%A1Galileo">「IntelのGalileoでパッケージマネージャopkgを使う」</a>を参照してください。</p>
-
-<p>次に、Package情報を更新し、新しいバージョンのパッケージがあるものは最新に入れ替えておくことにします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>opkg update
-</span><span class='line'>opkg upgrade</span></code></pre></td></tr></table></div></figure>
-
-
-<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、簡単に時間が設定されるようにします。自動で時間を設定してくれるntpdateをPackageインストールします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install ntpdate
-</span><span class='line'>ntpdate ntpdate ntp.nict.jp</span></code></pre></td></tr></table></div></figure>
-
-
-<p>次に、ntpdもインストールして設定しておきます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install ntp</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ntpの設定ファイルを編集します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>vi /etc/ntp.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p><em># server time.server.example.com</em>と書かれている行をコメントアウトし、次のように公開されているntpサーバー名を記載します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># server time.server.example.com
-</span><span class='line'>server ntp.nict.jp
-</span><span class='line'>server 0.asia.pool.ntp.org</span></code></pre></td></tr></table></div></figure>
-
-
-<p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>opkg install sysstat</span></code></pre></td></tr></table></div></figure>
-
-
-<p>DD-agentを起動するためのPackageの追加インストールは、これで終了です。</p>
-
-<h2>DD-agentのダウンロード</h2>
-
-<p>OSの準備ができたので、DD-agentをGithubから取得し、Galileoに設置します。
-Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のような検索結果が表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/github-dd-agent.png" width="800" height="800" title="github dd-agent" alt="github dd-agent"></p>
-
-<p>赤枠で囲った項目をダブルクリックして、Datadogが管理しているdd-agentのページに移動します。</p>
-
-<p><img class="center" src="/images/blog-images/github-dd-agent-dl.png" width="800" height="800" title="github dd-agent" alt="github dd-agent"></p>
-
-<p><code>Download ZIP</code> ボタンを見つけ、右クリックを使ってリンク先URLをクリップボードに保存ます。</p>
-
-<p>Galileoのwgetコマンドでは、githubのCAの情報がうまく処理でないようなので<em>&mdash;no-check-certificate</em>をコマンドオプションに追記し実行します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>wget --no-check-certificate https://github.com/DataDog/dd-agent/archive/master.zip</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ダウンロードが終わったらファイルを解凍し、起動の準備に入ります。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>unzip master.zip</span></code></pre></td></tr></table></div></figure>
-
-
-<p>master.zipは、<code>dd-agent-master</code>というディレクトリ以下に展開されます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd dd-agent-master</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ディレクトリを<code>ls</code>で表示してみると次の様になっているはずです。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>root@clanton:~/dd-agent-master# ls
-</span><span class='line'>CHANGELOG.md    aggregator.py   dogstream  requirements.txt
-</span><span class='line'>LICENSE     checks    emitter.py   resources
-</span><span class='line'>LICENSE-boto    checks.d    ez_setup.py  setup.py
-</span><span class='line'>LICENSE-httplib2  compat    graphite.py  supervisord.dev.conf
-</span><span class='line'>LICENSE-minjson   conf.d    httplibproxy.py  tests
-</span><span class='line'>LICENSE-ntplib    config.py   jmxfetch.py  transaction.py
-</span><span class='line'>MANIFEST.in   daemon.py   migration.py   urllib2proxy.py
-</span><span class='line'>README.markdown   datadog-cert.pem  minjson.py   util.py
-</span><span class='line'>Rakefile    datadog.conf.example  modules.py   win32
-</span><span class='line'>Vagrantfile   ddagent.py    packaging  yaml
-</span><span class='line'>agent.py    dogstatsd.py    pup</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>API keyの取得</h2>
-
-<p>DatadogのAPIアクセスは、API keyを使って認証しています。このkey(文字列)情報は、DD-agentの起動時に設定ファイルから読み込む仕様になっているので、設置ファイルに事前に記述しておく必要があります。</p>
-
-<p>設定ファイルのサンプルが、dd-agent-masterディレクトリにあるので、このサンプルファイルをコピーして作業を始めます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cp datadog.conf.example datadog.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>次に、設定ファイルに書き込むためのAPI keyを<a href="https://app.datadoghq.com/account/settings#api">Datadog APIs</a>ページから取得します。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-apikey.png" width="800" height="800" title="datadog apikey" alt="datadog apikey"></p>
-
-<p>API keyの文字列が分かったところで、設定ファイルの編集をします</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>vi datadog.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>設定ファイルの18行目にある、<code>api_key:</code>の後ろに先のページで取得したAPI keyをペーストします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[Main]
-</span><span class='line'>
-</span><span class='line'># The host of the Datadog intake server to send Agent data to
-</span><span class='line'>dd_url: https://app.datadoghq.com
-</span><span class='line'>
-</span><span class='line'># If you need a proxy to connect to the Internet, provide the settings here
-</span><span class='line'># proxy_host: my-proxy.com
-</span><span class='line'># proxy_port: 3128
-</span><span class='line'># proxy_user: user
-</span><span class='line'># proxy_password: password
-</span><span class='line'>
-</span><span class='line'># If you run the agent behind haproxy, you might want to set this to yes
-</span><span class='line'># skip_ssl_validation: no
-</span><span class='line'>
-</span><span class='line'># The Datadog api key to associate your Agent's data with your organization.
-</span><span class='line'># Can be found here:
-</span><span class='line'># https://app.datadoghq.com/account/settings
-</span><span class='line'>api_key:</span></code></pre></td></tr></table></div></figure>
-
-
-<p>これで設定ファイルの追記も完了です。</p>
-
-<h2>Agentの動作確認</h2>
-
-<p>Agentを起動する前にdatadog関連のデーモンがlogを出力する先のディレクトリーを準備しておきます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>mkdir /var/log/datadog</span></code></pre></td></tr></table></div></figure>
-
-
-<p>それでは、Agentを起動してみます。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/dd-agent-master
-</span><span class='line'>python agent.py start</span></code></pre></td></tr></table></div></figure>
-
-
-<p>しばらくすると、Datadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページ上に<strong>clanton</strong>(Galileoに設定したホスト名)というホスト名が追加されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-infra-clanton.png" width="800" height="800" title="datadog clanton" alt="datadog clanton"></p>
-
-<p>ホスト名をダブルクリックすると、sysstatが収集しているGalileoの基本メトリックスがグラフ化されて表示されるはずです。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-clanton.png" width="800" height="800" title="datadog clanton" alt="datadog clanton"></p>
-
-<h2>DogtatsDの動作確認</h2>
-
-<p>次に、任意のメトリックスを手軽に転送するためにDogStatsを起動することにします。</p>
-
-<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを利用した派生バージョンです。StatsDは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアです。</p>
-
-<p>同様の目的でDogStatsDを使うことで、プログラムの中からDatadogのサービスに任意のメトリックスを簡単に転送することができます。メトリックスさえ転送できてしまえば、後はDatadogのダッシュボード機能を使って、集めたメトリックスをリアルタイムに処理&amp;可視化できるという文脈になります。</p>
-
-<p>既に設定ファイルへのAPI keyの追記は済んでいるので、次のように起動します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/dd-agent-master
-</span><span class='line'>python dogstatsd.py start</span></code></pre></td></tr></table></div></figure>
-
-
-<p>任意のメトリックスをプログラムの中からDogStatsDを介してDatadogに送信ができたかを確認するためには、次のような簡単なプログムを書きます。</p>
-
-<p>pythonの場合は、Datadogが提供しているDogStatsDのラッパーライブラリーがPIPにあるので次のようにインストールすることにします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~/dd-agent-master
-</span><span class='line'>python ez_setup.py
-</span><span class='line'>easy_isntall pip
-</span><span class='line'>pip install dogstatsd-python</span></code></pre></td></tr></table></div></figure>
-
-
-<p>dogstatsd-pythonのインストールが無事インストールが成功したら、<strong>dogstatsd-test.py</strong>などのファイル名で次のファイルのようなpythonスクリプトを書きます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#! /usr/bin/env python</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">from</span> <span class="nn">statsd</span> <span class="kn">import</span> <span class="n">statsd</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">time</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">random</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">mysleep</span><span class="p">():</span>
-</span><span class='line'>    <span class="n">statsd</span><span class="o">.</span><span class="n">increment</span><span class="p">(</span><span class="s">&#39;myapp.testsleep&#39;</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">sleep_time</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">print</span> <span class="s">&quot;sleep: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">sleep_time</span>
-</span><span class='line'>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_time</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-</span><span class='line'>    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
-</span><span class='line'>        <span class="n">mysleep</span><span class="p">();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>pythonスクリプトが書き上がったところで実行してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="n">python</span> <span class="n">dogstatsd</span><span class="o">-</span><span class="n">test</span><span class="o">.</span><span class="n">py</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>コンソールに大量の<em>sleep</em>文字列が出力されます。バックグラウンドではsleepが表示された回数をカウントして、一定時間ごとにそのカウント値をDatadogに転送しています。</p>
-
-<p>先に見たDatadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページの<strong>clanton</strong>の行の右端にmyappという青いラベルが増えていることが確認できたら、ダブルクリックしmyappの名前スペースのメトリックスを表示するページに移動します。</p>
-
-<p>今は、myappの名前スペースに１種類のメトリックスしかないので、次のようなグラフが表示されれば、動作確認は完了です。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-myapp-testsleep.png" width="800" height="800" title="datadog myapp testsleep" alt="datadog myapp testsleep"></p>
-
-<h2>まとめ</h2>
-
-<p>ここまでで前編は終わりです。内容が理解できれば30分以内でできてしまうインストール作業ではないかと思います。こんな簡単な作業で、GPIOで集めた情報も可視化できるなんて素晴しいと思いませんか。後半では、GalileoのGPIO関連ライブラリーと任意のメトリックスの取り扱いに関して書いていこうと思います。</p>
-
-<ul>
-<li>2014/04/18 ntpdate、及びntpの設定に関連する記述を変更しました。</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-14T16:44:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。</p>
-
-<p>Datadogにloginし、ダッシュボードから<code>Integrations</code> タブにカーソルを移動し、ドロップダウンから<code>Integrations</code>を選択すると次のページに移動することができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>各Instarationのタイルにカーソルを合わせると、その解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-add.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationタブを選択して、設定項目を入力し<code>Install Integration</code>をクリックします。</p>
-
-<p>Integrationの種類によっては、サーバー側の設定が必要なものもあります。その情報は、Configurationページで詳細に記載されています。その手順に従って設定作業を完了しておいてください。</p>
-
-<p>Datadog側でIntagrationのインストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。後に設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定することで、新しい設定を反映させるとことができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-installed.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationが正しくできてメトリックスがDatadog側で受信できていれば、しばらくすると<code>Infrastracture</code>ページにメトリックスを表示するための青いラベルが追加されます。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -598,6 +799,14 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>

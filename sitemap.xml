@@ -22,11 +22,23 @@
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1/</loc>
-        <lastmod>2014-04-24T21:31:22+09:00</lastmod>
+        <lastmod>2014-04-24T21:10:34+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1/</loc>
-        <lastmod>2014-04-24T21:31:22+09:00</lastmod>
+        <lastmod>2014-04-24T22:29:30+09:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/
+        </loc>
+        <lastmod>2014-04-25T21:10:59+09:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/
+        </loc>
+        <lastmod>2014-04-25T21:10:50+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/about/</loc>
@@ -34,11 +46,11 @@
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/archives/</loc>
-        <lastmod>2014-04-24T21:31:22+09:00</lastmod>
+        <lastmod>2014-04-25T21:10:59+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/</loc>
-        <lastmod>2014-04-24T21:31:22+09:00</lastmod>
+        <lastmod>2014-04-25T21:10:59+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/robots.txt</loc>

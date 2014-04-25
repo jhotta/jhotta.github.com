@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Intel | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/intel/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-24T21:31:38+09:00</updated>
+  <updated>2014-04-25T21:11:12+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,464 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Intel GalileoのGPIOをpythonアプリから操作してみる(実践)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/"/>
+    <updated>2014-04-25T19:20:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2</id>
+    <content type="html"><![CDATA[<h2>GPOIを便利に使うためのラッパーライブラリー</h2>
+
+<p>やるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。</p>
+
+<p>Galileoには、Node.jsとPythonが既に実装されているので、これら二つのプログラミング言語について掲載します。</p>
+
+<h3>Node.js:</h3>
+
+<ul>
+<li><a href="https://github.com/wupsbr/galileo-gpio/network">galileo-gpio</a> (Lチカでつまずいて、JSが得意でない僕は先を断念）</li>
+<li><a href="https://github.com/sajirdalas/virginia-io">virginia-io</a> (未だ動作テストしていません)</li>
+</ul>
+
+
+<h3>Python:</h3>
+
+<ul>
+<li><a href="https://github.com/galileo-chofrock/pyGalileo">pyGalileo</a> オリジナル版</li>
+<li><a href="https://github.com/jhotta/pyGalileo">pyGalileo</a> jhottaの自力バグ修正版</li>
+</ul>
+
+
+<p><em>Intelさん正式版のGPIOの仕様書の参照先を教えてください。jhottaの自力修正版に反映したいと思います〜。</em></p>
+
+<h2>Pythonスクリプトの例</h2>
+
+<p>僕は、Node.jsでのプログラミングは得意ではないので先に紹介したライブラリーを使いこなせていません。従って、ここからはpyGalileoを使って進めることにします。</p>
+
+<h3>1. 準備</h3>
+
+<p>これから書いていくプログラムを管理するディレクトリを作りし、pyGalileoをDLし、解凍しておきます。</p>
+
+<p><code>bash
+mkdir myapps
+cd myapps
+wget --no-check-certificate https://github.com/jhotta/pyGalileo/archive/master.zip
+unzip master.zip
+</code></p>
+
+<p>Pythonのライブラリーとしてimportする際に、<code>-master</code>は不要なので、ディレクトリ名前を変更しておきます。</p>
+
+<p><code>
+mv pyGalileo-master/ pyGalileo
+</code></p>
+
+<h3>2. 外部からコールできるpyGalileoの関数</h3>
+
+<p>次にpyGalileoが準備している関数を紹介します。</p>
+
+<ul>
+<li><p><strong>pinMide(pin, direction)</strong></p>
+
+<p>  digitalピンの設定を書き込むファイルの準備と、出力又は入力でのピン利用を設定する。</p></li>
+<li><p><strong>digitalWrite(pin, value)</strong></p>
+
+<p>  digitalピンのHIGH,LOW設定。文字列"HIGH",&ldquo;LOW"をvalueに設定する。</p></li>
+<li><p><strong>digitalRead(pin)</strong></p>
+
+<p>  digitalピンのIGH,LOWを読み込む。</p></li>
+<li><p><strong>analogWrite(pin, value)</strong></p>
+
+<p>  digitalピンのPWM出力を使って、出力を制御する。0~255のintをvalueに設定する。</p></li>
+<li><p><strong>analogRead(pin)</strong></p>
+
+<p>  analogピンの値を読み込む。</p></li>
+<li><p><strong>delay(msTime)</strong></p>
+
+<p>  ミリ秒の遅延設定する。</p></li>
+<li><p><strong>micros()</strong></p>
+
+<p>  マイクロ秒単位で現在時刻を表示する。</p></li>
+<li><p><strong>millis()</strong></p>
+
+<p>  ミリ秒単位で現在時刻を表示する。</p></li>
+</ul>
+
+
+<h3>3. Pythonで書くGPIO経由のLチカ(Digital input &amp; LED)</h3>
+
+<p>D4に接続したボタンスイッチで、D5に接続したLEDを点灯する例です。ボタンスイッチを押すと、LEDが点灯します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<p><code>bash
+cd myapps
+vi digital.py
+</code></p>
+
+<p>digital.pyの内容は次のようになります。</p>
+
+<p>```python</p>
+
+<h1>!/usr/bin/env python</h1>
+
+<p>import sys
+from pyGalileo import *</p>
+
+<p>buttonPin = 4
+ledPin = 5
+buttonState = 0</p>
+
+<p>def setup():
+  pinMode(ledPin, OUTPUT)
+  pinMode(buttonPin, INPUT)</p>
+
+<p>def loop():
+  while True:</p>
+
+<pre><code>buttonState = digitalRead(buttonPin)
+if buttonState == HIGH:
+  digitalWrite(ledPin, HIGH)
+else:
+  digitalWrite(ledPin, LOW)
+</code></pre>
+
+<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&rdquo;:
+  setup()
+  loop()
+```</p>
+
+<p>実行してみます。</p>
+
+<p><code>bash
+python ./digital.py
+</code></p>
+
+<h3>4. Pythonで書くGPIO経由のLチカ(Analog input &amp; LED)</h3>
+
+<p>A2に接続したボリューム抵抗で、D5に接続したLEDの点灯間隔を変化させる例です。ボユームを回すと、LEDの点灯間隔が変化します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<p><code>bash
+cd myapps
+vi analog.py
+</code></p>
+
+<p>analog.pyの内容は次のようになります。</p>
+
+<p>```python</p>
+
+<h1>!/usr/bin/env python</h1>
+
+<p>import sys
+from pyGalileo import *</p>
+
+<p>sensorPin = A2
+ledPin = 5
+sensorValue = 0</p>
+
+<p>def setup():
+  pinMode(ledPin, OUTPUT)</p>
+
+<p>def loop():
+  while True:</p>
+
+<pre><code>sensorValue = analogRead(sensorPin)
+digitalWrite(ledPin, HIGH)
+delay(sensorValue)
+digitalWrite(ledPin, LOW)
+print("sensorValue:" + str(sensorValue))
+delay(sensorValue)
+</code></pre>
+
+<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&rdquo;:
+  setup()
+  loop()
+```</p>
+
+<p>実行してみます。</p>
+
+<p><code>bash
+python ./analog.py
+</code></p>
+
+<h3>5. Pythonで書くGPIO経由のPWM</h3>
+
+<p>D5に接続したLEDの照度を、duty_cycle(仕事率)を変化させることで変化させる例です。LEDが照度が上り/下がる状態を繰り返します。</p>
+
+<p>プログラムを記述するためのファイルを準備します。</p>
+
+<p><code>bash
+cd myapps
+vi pwm.py
+</code></p>
+
+<p>pwm.pyの内容は次のようになります。</p>
+
+<p>```python</p>
+
+<h1>!/usr/bin/env python</h1>
+
+<p>import sys
+from pyGalileo import *</p>
+
+<p>led = 5
+brightness = 0
+fadeAmount = 5    # フェード量</p>
+
+<p>def setup():
+  pinMode(led, OUTPUT)</p>
+
+<p>def loop():
+  while True:</p>
+
+<pre><code>analogWrite(led, brightness)
+brightness = brightness + fadeAmount
+# フェード方向の反転
+if brightness == 0 or brightness == 255:
+  fadeAmount = -fadeAmount
+delay(30)
+</code></pre>
+
+<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&rdquo;:
+  setup()
+  loop()
+```</p>
+
+<p>実行してみます。</p>
+
+<p><code>bash
+python ./pwm.py
+</code></p>
+
+<h3>まとめ</h3>
+
+<p>一般的なプログラミング言語によるGalileoのGPIOの操作は、IDEで開発するのと大差がないのが提示できたと思います。</p>
+
+<p>ポストの最初にも書いたようにGalileoのメリットは、既存のLinux資産を活かしGPIOをどのように使っていくかだと思います。
+Linuxベースの開発経験を持ったエンジニアもGPIOを操作して、IoTの世界で僕らの未来を作るような開発をしてもらえると幸いです。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/"/>
+    <updated>2014-04-24T23:03:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python</id>
+    <content type="html"><![CDATA[<p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになる。</p>
+
+<p>しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、Galileoの優位性はLinuxの有志が提供してくれている各種ソフトとarduino互換GPIOの連携と勝手に思い込んでいるので、IDEを使わずにGPIOの操作ができないかと調べた結果をまとめてみます。</p>
+
+<h2>Galileo GPIOの仕様もどき</h2>
+
+<p>Intel社みたいな大手企業なら何処かに正式な仕様書が存在していると思うのだが、googleで検索しても僕はそれらしきものを見つけることができなかった。しかしながら、次のSergey氏のサイトに書かれている内容を参照するとGPIOの動作が理解できます。</p>
+
+<p><a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Intel Galileo &ndash; Programming GPIO From Linux</a></p>
+
+<p><a href="https://www.yoctoproject.org/">Yocto Project</a>のLinuxで動作しているGalileoも、<a href="http://www.raspberrypi.org/">Raspberry Pi</a>等と同じように、特定の場所のファイルに対し設定内容を書き込めば、GPIOの目的ピンに意図している設定は反映されるようになっています。</p>
+
+<p>GPIOの設定内容を書き込むファイルの場所は次のディレクトリになります。</p>
+
+<p><code>bash
+cd /sys/class/
+</code></p>
+
+<p>まず、ディレクトリ移動して内容を見てみましょう。</p>
+
+<p><code>bash
+root@clanton:/sys/class# ls
+backlight cpuid      input     net       scsi_generic   tty
+bdi   dma      mdio_bus  pci_bus       scsi_host      udc
+block   firmware     mem       power_supply  spi_host     uio
+bluetooth gpio       misc      pwm       spi_master     vc
+bsg   i2c-adapter  mmc_host  rfkill      spi_transport  vtconsole
+cln_esram_test  i2c-dev      msr       scsi_device   spidev
+cln_imr_test  ieee80211    mtd       scsi_disk     thermal
+</code></p>
+
+<p>GPIOピンの設定は、gpioディレクトリとpwmディレクトリ以下にあるファイルに書き込み操作をすることによって行います。</p>
+
+<p>各ピンの設定詳細に関しては、先に紹介した<a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Sergey氏のサイト</a>の図表を参照してください。</p>
+
+<h2>コンソール入力でGPIOピンを操作してみる</h2>
+
+<h3>1.Digital 出力</h3>
+
+<p>digital 5ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<p><code>bash
+echo -n "17" &gt; /sys/class/gpio/export
+</code></p>
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、出力設定なので<code>direction</code>ファイルに<code>out</code>(出力)と書き込みます。</p>
+
+<p><code>bash
+echo -n "out" &gt; /sys/class/gpio/gpio17/direction
+</code></p>
+
+<p>信号の出力モードを設定します。LEDを付けるなどの一般用途では<code>strong</code>を使います。詳細に関しては、先のサイトを参照してください。</p>
+
+<p><code>bash
+echo -n "strong" &gt; /sys/class/gpio/gpio17/drive
+</code></p>
+
+<p>ピン出力のHIGH, LOWは、<code>value</code>ファイルへ<code>1</code>と<code>0</code>を書き込むことで操作します。1=HIGH, 0=LOWです。</p>
+
+<p><code>bash
+echo -n "1" &gt; /sys/class/gpio/gpio17/value
+</code></p>
+
+<p>digital 5ピンにLEDを接続すれば、Lチカができます。</p>
+
+<h3>2.Digital 入力</h3>
+
+<p>digital 5ピンを入力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<p><code>bash
+echo -n "17" &gt; /sys/class/gpio/export
+</code></p>
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、入力設定なので<code>direction</code>ファイルに<code>in</code>(入力)と書き込みます。</p>
+
+<p><code>bash
+echo -n "in" &gt; /sys/class/gpio/gpio17/direction
+</code></p>
+
+<p>信号の出力モードを設定します。先の資料には、<code>strong</code>で問題と書かれていますが、僕の手元の環境では再現できませんでした。<strong>僕の環境では、<code>hiz</code>の設定をしたときのみです。</strong>従って、ここでは、<code>hiz</code>を書き込みます。</p>
+
+<p><code>bash
+echo -n "hiz" &gt; /sys/class/gpio/gpio17/drive
+</code></p>
+
+<p><code>value</code>ファイルに、HIGH=1, LOW=0で値が書かれているのを確認してみます。</p>
+
+<p><code>bash
+cat /sys/class/gpio/gpio17/value
+</code></p>
+
+<p>digital 5ピンにボタンスイッチ等を接続し、ON/OFFしファイルを状態をcatしてみましょう。</p>
+
+<h3>3.Analog 出力</h3>
+
+<p>digital 5ピンをPWM出力として使用するための設定をしてみます。</p>
+
+<p>次の4ステップは、Digital出力を準備するのと同じです。</p>
+
+<p><code>bash
+echo -n "17" &gt; /sys/class/gpio/export
+</code></p>
+
+<p><code>bash
+echo -n "out" &gt; /sys/class/gpio/gpio17/direction
+</code></p>
+
+<p><code>bash
+echo -n "strong" &gt; /sys/class/gpio/gpio17/drive
+</code></p>
+
+<p><em>PWMの設定する前は、該当ピンの出力が確実にLOWでなっているように設定しておきます。</em></p>
+
+<p><code>bash
+echo -n "0" &gt; /sys/class/gpio/gpio17/value
+</code></p>
+
+<p>PWM出力の準備を始めます。Digital 5ピンのPWMチャネルが5番であることを、先の対応図表で確認します。
+(以下の各コマンド内の<code>5</code>は、PWMチャネル番号です。)</p>
+
+<p><code>/sys/class/pwm/pwmchip0/export</code>に対して、pwmチャネル番号<code>5</code>を書き込みます。</p>
+
+<p><code>bash
+echo -n "5" &gt; /sys/class/pwm/pwmchip0/export
+</code></p>
+
+<p><code>/sys/class/pwm/pwmchip0/enable</code>に対して、<code>1</code>(有効)を書き込みます。
+<code>1</code>=有効,<code>0</code>=無効です。</p>
+
+<p><code>bash
+echo -n "1" &gt; /sys/class/pwm/pwmchip0/pwm5/enable
+</code></p>
+
+<p>PWMの周期時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/period</code>へ書き込みます。<code>1900000</code>は、IDEがPWMに設定していた周期時間です。</p>
+
+<p><code>bash
+echo -n "1900000" &gt; /sys/class/pwm/pwmchip0/pwm5/period
+</code></p>
+
+<p>PWMのHIGHの時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/duty_cycle</code>へ書き込みます。<code>800000</code>は、50%の仕事率を設定しています。</p>
+
+<p><code>bash
+echo -n "800000" &gt; /sys/class/pwm/pwmchip0/pwm5/duty_cycle
+</code></p>
+
+<p>一通りPWMの設定が済んだところで、<code>/sys/class/gpio/gpio17/value</code>をHIGHにします。(PWMが動作している間に<code>value</code>をcatしてみると、<code>1</code>か<code>0</code>が出力されます。)</p>
+
+<p><code>bash
+echo -n "1" &gt; /sys/class/gpio/gpio17/value
+</code></p>
+
+<p>digital 5ピンにLEDを接続すれば、LEDが50%の照度で点灯ができます。
+<code>duty_cycle</code>の数値を変更すると、LEDの照度が変わります。</p>
+
+<h3>4.Analog 入力</h3>
+
+<p>Analog A0ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のanalog A0ピンは、複数の機能をMUXで切り替えるようになっています。
+gpio番号としては37番に書き込みをすることによって、A0ピンをAD7298 ADCのICに接続することができます。</p>
+
+<p>今までと同じように、<code>export</code>ファイルに<code>37</code>を書き込みます。</p>
+
+<p><code>bash
+echo -n "37" &gt; /sys/class/gpio/export
+</code></p>
+
+<p>MUXを設定するための<code>gpio37/direction</code>を<code>out</code>(出力)に設定します。</p>
+
+<p><code>bash
+echo -n "out" &gt; /sys/class/gpio/gpio37/direction
+</code></p>
+
+<p><code>gpio37/value</code>を、<code>0</code>(LOW)にしAD7298 ADCにA0入力を接続します。</p>
+
+<p><code>bash
+echo -n "0" &gt; /sys/class/gpio/gpio37/value
+</code></p>
+
+<p><code>/sys/bus/iio/devices/iio\:device0/in_voltage0_raw</code>をcatすることで、A0入力を読み取ります。</p>
+
+<p><code>bash
+cat /sys/bus/iio/devices/iio\:device0/in_voltage0_raw
+</code></p>
+
+<p>ボリューム抵抗等をA0に接続し、catを繰り返すと数値が変化していることが確認できます。</p>
+
+<h3>5.使用したピンの後処理</h3>
+
+<p>ピンの利用解除は、次に示すようにgpioディレクトリかpwmのディレクトリの unxport ファイルに、該当GPIO番号かPWMチャネル番号の書き出して処理します。</p>
+
+<p><code>bash
+echo -n "17" &gt; /sys/class/gpio/unexport
+</code></p>
+
+<p><code>bash
+echo -n "5" &gt; /sys/class/pwm/pwmchip0/unexport
+</code></p>
+
+<h2>まとめ</h2>
+
+<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIOを操を確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Datadog agentをIntel Galileoで動かす(前編)]]></title>
