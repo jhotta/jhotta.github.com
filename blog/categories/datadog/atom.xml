@@ -4,7 +4,7 @@
   <title><![CDATA[Category: datadog | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/datadog/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-13T16:12:33+09:00</updated>
+  <updated>2014-05-13T16:16:47+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -18,7 +18,7 @@
     <link href="http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2/"/>
     <updated>2014-05-13T13:40:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2</id>
-    <content type="html"><![CDATA[<p><a href="../../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
+    <content type="html"><![CDATA[<p><a href="../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
 しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。</p>
 
 <p><code>bash
@@ -237,7 +237,7 @@ socket-fqdn: raspberrypi
 
 <p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できるはずです。</p>
 
-<p><a href="../../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
+<p><a href="../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
 ]]></content>
   </entry>
   
