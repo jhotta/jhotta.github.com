@@ -4,7 +4,7 @@
   <title><![CDATA[Category: raspberry pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-13T16:24:17+09:00</updated>
+  <updated>2014-05-13T16:25:31+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -117,7 +117,7 @@ restart)
 exit 0
 ```</p>
 
-<p>スクリプトの前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
+<p>スクリプト前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
 
 <p>supervisord.sockの存在確認をstartの部分でしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみ<code>supervisord</code>にデーモン起動して欲く、
 それ以降は<code>supervisorctl</code>によるデーモンへの管理操作依頼コマンドとなるからです。</p>
