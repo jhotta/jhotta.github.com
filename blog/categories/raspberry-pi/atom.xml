@@ -4,7 +4,7 @@
   <title><![CDATA[Category: raspberry pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-13T16:22:41+09:00</updated>
+  <updated>2014-05-13T16:24:17+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -235,7 +235,7 @@ socket-fqdn: raspberrypi
   Transactions flushed: 1395
 ```</p>
 
-<p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できるはずです。</p>
+<p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できます。</p>
 
 <p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
 ]]></content>
