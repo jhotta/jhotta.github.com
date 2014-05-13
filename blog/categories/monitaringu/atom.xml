@@ -4,7 +4,7 @@
   <title><![CDATA[Category: モニターリング | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/monitaringu/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-13T21:41:53+09:00</updated>
+  <updated>2014-05-13T21:42:45+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -119,7 +119,7 @@ exit 0
 
 <p>スクリプト前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
 
-<p>startの部分でsupervisord.sockの存在確認をしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみ<code>supervisord</code>にデーモン起動して欲しいからです。
+<p>startの部分でsupervisord.sockの存在確認をしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみにデーモンとして起動して欲しいからです。
 起動以降は<code>supervisorctl</code>によるデーモンへの管理操作依頼コマンドへと移行します。</p>
 
 <p>このスクリプトを<code>datadog-agent</code>のファイル名で<code>/etc/init.d</code>に設置し実行権限を付与します。
