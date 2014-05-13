@@ -121,7 +121,7 @@
 <li>VirtualBoxの仮想マシンのネットワークのグローバルIP接続設定と確認は、事前に済ませる。(当然か…)</li>
 <li>ubuntuの配布パッケージには、<code>unzipx</code>は存在しないようなので、<code>apt-get install</code>では<code>unzip</code>に変更する。</li>
 <li>wgetなどで仮想マシンへ直接DLしたい場合は、次のリンク<a href="http://downloadmirror.intel.com/23171/eng/Board_Support_Package_Sources_for_Intel_Quark_v0.7.5.7z">Board_Support_Package_Sources_for Intel_Quark_V0.7.5.7z</a>を利用する。</li>
-<li>Ubuntu12.04の場合、ビルド時に渡ってくる引数が長すぎるとコンパイルエラーになる。従って<strong>必ず記事の指定通りの方法で<code>meta-clanton_v0.7.5.tar gz</code>を解凍する</strong>。(ここが一番時間の無駄!)</li>
+<li>Ubuntu12.04の場合、ビルド時に渡ってくる引数が長すぎるとコンパイルエラーになる。従って<strong>必ず記事の指定通りの方法で<code>meta-clanton_v0.7.5.tar gz</code>を解凍する</strong>。(つまらないコンパイルエラーが一番時間の無駄!)</li>
 <li><code>meta-clanton_v0.7.5/yocto_build/conf/local.conf</code>内の<code>BB_NUMBEWR_THERADS</code>と<code>PARALLEL_MAKE</code>の値を、<strong>仮想マシンの割当CPUコア数に合わせて変更をしておく</strong>。ビルド時に並列プロセスが重なると逆に遅くなる。(雑誌の110項右上参照)</li>
 <li>ShellにPathを設定していないので、<code>source porky/oe-build-env yocto_build</code>を真面目に実行しないとbitbakeが実行できなかった。(当然かonz…)</li>
 </ul>
