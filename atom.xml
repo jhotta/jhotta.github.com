@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-13T16:16:47+09:00</updated>
+  <updated>2014-05-13T16:22:41+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -18,7 +18,7 @@
     <link href="http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2/"/>
     <updated>2014-05-13T13:40:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2</id>
-    <content type="html"><![CDATA[<p><a href="../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
+    <content type="html"><![CDATA[<p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
 しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -366,7 +366,7 @@
 
 <p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できるはずです。</p>
 
-<p><a href="../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
+<p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
 ]]></content>
   </entry>
   
@@ -1368,7 +1368,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1/"/>
     <updated>2014-04-11T15:44:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1</id>
-    <content type="html"><![CDATA[<p><a href="../../../../2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
+    <content type="html"><![CDATA[<p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
 
 <p>Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
 
@@ -1474,7 +1474,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
 
-<p><a href="../../../../2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
+<p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
 
 <h5>追記 2014/04/15:</h5>
 
