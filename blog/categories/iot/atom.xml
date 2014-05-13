@@ -4,7 +4,7 @@
   <title><![CDATA[Category: IoT | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/iot/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-04-25T22:13:01+09:00</updated>
+  <updated>2014-05-13T16:12:33+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,234 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Raspberry piにもDatadog Agentをインストールしてみる(後編)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2/"/>
+    <updated>2014-05-13T13:40:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2</id>
+    <content type="html"><![CDATA[<p><a href="../../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
+しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。</p>
+
+<p><code>bash
+sudo su
+cd /root/.datadog-agent
+sh bin/agent start
+</code></p>
+
+<p>ここで僕が参考にしたのが、<code>/root/.datadog-agent/bin/agnet</code>です。このスクリプトの<code>start</code>, <code>stop</code>のあたりに注目します。</p>
+
+<p>```bash
+case $action in</p>
+
+<pre><code>start)
+    if supervisor_running; then
+        echo "Supervisor is already running"
+        execute_if_supervisor_running start all
+        exit 0
+    else
+        echo "Starting supervisor"
+        supervisord -c $SUPERVISOR_CONF_FILE
+    fi
+    ;;
+
+stop)
+    execute_if_supervisor_running stop all
+    exit $?
+    ;;
+</code></pre>
+
+<p>```</p>
+
+<p>…ということで、<a href="http://supervisord.org/">supervisor</a>って何だろうと思いながら、googleで検索すると<a href="http://qiita.com/yushin/items/15f4f90c5663710dbd56">「Supervisorで簡単にデーモン化」</a>みたいなtoolらしいです。そこで対応OSのinit.dでは、supervisorを使わずにDD-Agentが起動しているのかと思いubuntuでinit.d以下のdatadog-agentスクリプトを見てみましたが、ここでも、supervisorを使っていました。</p>
+
+<p>今回は難しいことを考えずに<code>/root/.datadog-agent/bin/agnet</code>の手順を再利用するこにします。startとstopのコード部分で関数として切り出されている部分をshellのコマンドに戻しディレクトリを調整すると次のようなスクリプトになりました。start,stop,restartしかできない簡単なものですがRaspberry Piの起動時に必要な最低限の要件は満たしていると思います。(error処理の観点からは、まだまだな…)</p>
+
+<p>```bash</p>
+
+<h1>! /bin/sh</h1>
+
+<h3>BEGIN INIT INFO</h3>
+
+<h1>Provides: datadog-agent</h1>
+
+<h1>Short-Description: Start and start datadog-agent</h1>
+
+<h1>Description: datadog-agent is the monitoring Agent component for Datadog</h1>
+
+<h1>Required-Start: $remote_fs $syslog</h1>
+
+<h1>Required-Stop: $remote_fs $syslog</h1>
+
+<h1>Default-Start: 2 3 4 5</h1>
+
+<h1>Default-Stop: 0 1 6</h1>
+
+<h3>END INIT INFO</h3>
+
+<p>DD_BASE=&ldquo;/root/.datadog-agent&rdquo;
+SOCK_FILE=&ldquo;/root/.datadog-agent/supervisord/agent-supervisor.sock&rdquo;</p>
+
+<p>supervisor_running() {</p>
+
+<pre><code>[ -e $SOCK_FILE ]
+</code></pre>
+
+<p>}</p>
+
+<p>case $1 in</p>
+
+<pre><code>start)
+    if supervisor_running; then
+        echo "Supervisor is already running"
+        cd $DD_BASE &amp;&amp; venv/bin/supervisorctl -c supervisord/supervisord.conf start all
+        exit 0
+    else
+        echo "Starting Supervisor"
+        cd $DD_BASE &amp;&amp; venv/bin/supervisord -c supervisord/supervisord.conf &amp;
+        exit 0
+    fi
+    ;;
+
+stop)
+    cd $DD_BASE &amp;&amp; venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
+    exit 0
+    ;;
+
+restart)
+    cd $DD_BASE &amp;&amp; venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
+    cd $DD_BASE &amp;&amp; venv/bin/supervisorctl -c supervisord/supervisord.conf start all
+    exit 0
+    ;;
+</code></pre>
+
+<p>esac
+exit 0
+```</p>
+
+<p>スクリプトの前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
+
+<p>supervisord.sockの存在確認をstartの部分でしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみ<code>supervisord</code>にデーモン起動して欲く、
+それ以降は<code>supervisorctl</code>によるデーモンへの管理操作依頼コマンドとなるからです。</p>
+
+<p>このスクリプトを<code>datadog-agent</code>のファイル名で<code>/etc/init.d</code>に設置し実行権限を付与します。
+<code>bash
+cd /etc/init.d
+vi datadog-agent # 先の内容をコピペします
+chmod 755 datadog-agent
+</code></p>
+
+<p><code>datadog-agent</code>の動作の確認をします。</p>
+
+<p>```bash
+./datadog-agent start
+./datadog-agent stop
+./datadog-agent restart</p>
+
+<p>```</p>
+
+<p>最後に、<code>datadog-agent</code>を自動起動スクリプトとして登録します。</p>
+
+<p><code>bash
+update-rc.d datadog-agent defaults
+</code></p>
+
+<p>ここで、Raspbery Piを再起動します。Raspberry Piが再起動し、sshでアクセスできたら、次のコマンドを実行してみます。</p>
+
+<p><code>bash
+sudo su
+cd /root/.datadog-agent
+sh bin/agent info
+</code></p>
+
+<p>Raspberry Piの起動時にDD-Agentが正しく起動していれば、次のように出力されます。</p>
+
+<h1>```bash</h1>
+
+<h1>Collector (v 4.2.1)</h1>
+
+<p>  Status date: 2014-05-13 15:35:31 (11s ago)
+  Pid: 2168
+  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+  Python Version: 2.7.3
+  Logs: <stderr>, syslog:/dev/log</p>
+
+<p>  Clocks
+  ======</p>
+
+<pre><code>NTP offset: 0.0006 s
+System UTC time: 2014-05-13 06:35:43.754188
+</code></pre>
+
+<p>  Paths
+  =====</p>
+
+<pre><code>conf.d: /root/.datadog-agent/agent/conf.d
+checks.d: /root/.datadog-agent/agent/checks.d
+</code></pre>
+
+<p>  Hostnames
+  =========</p>
+
+<pre><code>socket-hostname: raspberrypi
+ec2-hostname: raspberrypi
+hostname: raspberrypi
+socket-fqdn: raspberrypi
+</code></pre>
+
+<p>  Checks
+  ======</p>
+
+<pre><code>network
+-------
+  - instance #0 [OK]
+  - Collected 8 metrics &amp; 0 events
+</code></pre>
+
+<p>  Emitters
+  ========</p>
+
+<pre><code>- http_emitter [OK]
+</code></pre>
+
+<p>===================</p>
+
+<h1>Dogstatsd (v 4.2.1)</h1>
+
+<p>  Status date: 2014-05-13 15:35:44 (0s ago)
+  Pid: 2166
+  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+  Python Version: 2.7.3
+  Logs: <stderr>, syslog:/dev/log</p>
+
+<p>  Flush count: 4391
+  Packet Count: 0
+  Packets per second: 0.0
+  Metric count: 0
+  Event count: 0</p>
+
+<p>===================</p>
+
+<h1>Forwarder (v 4.2.1)</h1>
+
+<p>  Status date: 2014-05-13 15:35:45 (1s ago)
+  Pid: 2167
+  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+  Python Version: 2.7.3
+  Logs: <stderr>, syslog:/dev/log</p>
+
+<p>  Queue Size: 0 bytes
+  Queue Length: 0
+  Flush Count: 2901
+  Transactions received: 1395
+  Transactions flushed: 1395
+```</p>
+
+<p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できるはずです。</p>
+
+<p><a href="../../../../2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Intel GalileoのGPIOをpythonアプリから操作してみる(実践)]]></title>
@@ -469,7 +697,7 @@ echo -n "5" &gt; /sys/class/pwm/pwmchip0/unexport
 
 <h2>まとめ</h2>
 
-<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIO操作の確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIOを操を確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
 
 <p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
 ]]></content>
@@ -779,7 +1007,9 @@ python dogstatsd-test.py
     <link href="http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1/"/>
     <updated>2014-04-11T15:44:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1</id>
-    <content type="html"><![CDATA[<p>Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
+    <content type="html"><![CDATA[<p><a href="../../../../2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
+
+<p>Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
 
 <p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
 
@@ -850,6 +1080,8 @@ sh bin/agent
 <p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="&lsquo;datadog dash &amp; raspi&rsquo; &lsquo;datadog dash &amp; raspi&rsquo;" ></p>
 
 <p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
+
+<p><a href="../../../../2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
 
 <h5>追記 2014/04/15:</h5>
 

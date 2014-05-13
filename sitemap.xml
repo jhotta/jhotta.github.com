@@ -2,7 +2,7 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://jhotta.github.io/blog/2013/11/13/lean-ux-seminar/</loc>
-        <lastmod>2014-04-15T01:06:00+09:00</lastmod>
+        <lastmod>2014-04-14T17:23:04+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2013/11/18/trema-day-4/</loc>
@@ -14,43 +14,47 @@
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/11/datadog-on-raspberry-pi-1/</loc>
-        <lastmod>2014-04-15T20:28:33+09:00</lastmod>
+        <lastmod>2014-05-13T15:30:39+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/14/datadog-integrations/</loc>
-        <lastmod>2014-04-24T14:29:48+09:00</lastmod>
+        <lastmod>2014-04-17T17:02:34+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1/</loc>
-        <lastmod>2014-04-24T21:14:44+09:00</lastmod>
+        <lastmod>2014-04-24T21:10:34+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/blog/2014/04/24/datadog-sending-custom-metrics-1/</loc>
-        <lastmod>2014-04-25T22:06:27+09:00</lastmod>
+        <lastmod>2014-04-24T22:29:30+09:00</lastmod>
     </url>
     <url>
         <loc>
             http://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/
         </loc>
-        <lastmod>2014-04-25T22:12:01+09:00</lastmod>
+        <lastmod>2014-04-25T22:02:22+09:00</lastmod>
     </url>
     <url>
         <loc>
             http://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/
         </loc>
-        <lastmod>2014-04-25T22:06:27+09:00</lastmod>
+        <lastmod>2014-04-25T21:19:21+09:00</lastmod>
     </url>
     <url>
-        <loc>http://jhotta.github.io/</loc>
-        <lastmod>2014-04-25T22:12:01+09:00</lastmod>
-    </url>
-    <url>
-        <loc>http://jhotta.github.io/blog/archives/</loc>
-        <lastmod>2014-04-25T22:12:01+09:00</lastmod>
+        <loc>http://jhotta.github.io/blog/2014/05/13/datadog-on-raspberry-pi-2/</loc>
+        <lastmod>2014-05-13T16:12:06+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/about/</loc>
-        <lastmod>2014-04-15T17:32:16+09:00</lastmod>
+        <lastmod>2014-04-16T12:28:51+09:00</lastmod>
+    </url>
+    <url>
+        <loc>http://jhotta.github.io/blog/archives/</loc>
+        <lastmod>2014-05-13T16:12:06+09:00</lastmod>
+    </url>
+    <url>
+        <loc>http://jhotta.github.io/</loc>
+        <lastmod>2014-05-13T16:12:06+09:00</lastmod>
     </url>
     <url>
         <loc>http://jhotta.github.io/robots.txt</loc>
