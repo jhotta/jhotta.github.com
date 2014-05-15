@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Intel | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/intel/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-14T17:55:50+09:00</updated>
+  <updated>2014-05-15T11:53:07+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -41,7 +41,7 @@
 
 <p><strong>これから、次の段階のカスタムイメージ作成に挑戦します~。</strong></p>
 
-<h3>追記:</h3>
+<h4>追記:</h4>
 
 <p>Interface誌に従って、meta-toolchainをコンパイルしていたら軽く32Gのディスクスペースを使いは果たしてしまいました。後で後悔しない為にも100Gバイトのディスクスペース確保は必要!</p>
 ]]></content>
