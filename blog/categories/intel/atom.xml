@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Intel | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/intel/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-28T15:57:58+09:00</updated>
+  <updated>2014-05-28T15:59:46+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -26,7 +26,7 @@
 
 <p>ワークショップは、回路図などの難しい説明はありませんでした。渡された部品と基盤を説明に従ってハンダ付け、Raspberry Piに接続し、動作確認をする、という至ってシンプルな流れでした。ワークショップでの作業時間を考慮すると、「電子工作初心者にはこれくらい簡素化された流れが、作業/理解できる限界」とも思いました。</p>
 
-<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、日常できない英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
+<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
 
 <p>さて、ワークショップで電子工作した温度&amp;湿度計の中身を見てみると、arduino系の電子工作で頻繁に見かける<a href="https://www.adafruit.com/products/386">DHT11 basic temperature-humidity sensor + extras</a>を使っていました。センサー周りの回路が一体化して、製品とプルアップ抵抗を回路に追加するだけというお手軽さがありがたい製品です。</p>
 
