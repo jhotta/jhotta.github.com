@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto &hellip;">
+  <meta name="description" content="始まり:先日、Tokyo HackerSpace(以後THS)で開催されたRaspberry Pi Work Shop @ THS #3に参加しました。丁度、GPIOで収集した情報でDatadog上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。 &hellip;">
   
 
-  <meta name="description" content="&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto &hellip;">
+  <meta name="description" content="始まり:先日、Tokyo HackerSpace(以後THS)で開催されたRaspberry Pi Work Shop @ THS #3に参加しました。丁度、GPIOで収集した情報でDatadog上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,94 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-28T12:23:00+09:00" pubdate data-updated="true">May 28<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>始まり:</h2>
+
+<p>先日、<a href="http://www.tokyohackerspace.org/ja">Tokyo HackerSpace(以後THS)</a>で開催された<a href="http://connpass.com/event/6352/">Raspberry Pi Work Shop @ THS #3</a>に参加しました。丁度、GPIOで収集した情報で<a href="http://www.datadoghq.com/">Datadog</a>上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。</p>
+
+<p><img class="center" src="/images/blog-images/ths-1.jpg" width="800" height="800" title="datadog integrations" alt="HackerSpace"></p>
+
+<p>ワークショップは、回路図などの難しい説明はありませんでした。渡された部品と基盤を説明に従ってハンダ付け、Raspberry Piに接続し、動作確認をする、という至ってシンプルな流れでした。ワークショップでの作業時間を考慮すると、「電子工作初心者には、これくらい簡素化された流れが、作業理解できる限界」とも思いました。</p>
+
+<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、日常できない英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
+
+<p>さて、ワークショップで電子工作した温度&amp;湿度計の中身を見てみると、arduino系の電子工作で頻繁に見かける<a href="https://www.adafruit.com/products/386">DHT11 basic temperature-humidity sensor + extras</a>を使っていました。センサー周りの回路が一体化して、製品とプルアップ抵抗を回路に追加するだけというお手軽さがありがたい製品です。</p>
+
+<p>しかし、Raspberry PiのGPIOに接続したDHT11の通信信号をPythonで読み取ろうとすると処理スピードが間に合わないらしく、DHT11からのデータの読み取りができないようです。なので、DHT系センサーとの通信をPythonから読み取るためのC言語のコードが提供されていることを知りました。</p>
+
+<p><a href="https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code">https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code</a></p>
+
+<p>リポジトリをクローンし、READMEを読んでみると次のようなサンプルコードが書かれていました。</p>
+
+<p>Usage example:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">dhtreader</span>
+</span><span class='line'>
+</span><span class='line'><span class="nb">type</span> <span class="o">=</span> <span class="mi">22</span>
+</span><span class='line'><span class="n">pin</span> <span class="o">=</span> <span class="mi">24</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">dhtreader</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+</span><span class='line'><span class="k">print</span> <span class="n">dhtreader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">pin</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ワークショップでは、「C言語で書かれたプログラムをosライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
+
+<p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
+
+<h2>Python extentionを調べてみる:</h2>
+
+<p>Python extentionを調べてみると、「Pythonのインタープリターとの間で、Pythonで書かれた他のモジュールと同じ使いように振る舞うことができる、C &amp; C++言語で記述されbuildされた、実行ファイル」らしい。更にPythonは、各プログラミング言語の中でも早い段階でユーザーによる拡張をサポートした言語とも書かれていた。</p>
+
+<p>次のケースでこの拡張性が威力を発揮すると考えられている…。</p>
+
+<pre><code>- Pythonのコア部分にない機能の追加
+- インタープリター言語で書かれているプログラムのボトルネック部分の解決策
+- Proprietary(独占)コードの隠蔽
+</code></pre>
+
+<p>次回は、DHT11に関連して、もう少しPython extensionを掘り下げてみよう。(その前に、Python extention基本について勉強してみます。)</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -527,344 +615,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-25T19:20:00+09:00" pubdate data-updated="true">Apr 25<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="https://jhotta.github.io/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>の続きです。GalileoのGPIOの基礎知識は、プログラムのDebugに必要です。</p>
-
-<h2>GPOIを便利に使うためのラッパーライブラリー</h2>
-
-<p>やるべきことの内容的を理解すれば簡単な操作ですが、毎回同じ操作をプログラム内で書くのも気が引けるので、ライブラリーがないか調べてみました。</p>
-
-<p>Galileoには、Node.jsとPythonが既に実装されているので、これら二つのプログラミング言語について掲載します。</p>
-
-<h3>Node.js:</h3>
-
-<ul>
-<li><a href="https://github.com/wupsbr/galileo-gpio/network">galileo-gpio</a> (Lチカでつまずいて、JSが得意でない僕は先を断念）</li>
-<li><a href="https://github.com/sajirdalas/virginia-io">virginia-io</a> (未だ動作テストしていません)</li>
-</ul>
-
-
-<h3>Python:</h3>
-
-<ul>
-<li><a href="https://github.com/galileo-chofrock/pyGalileo">pyGalileo</a> オリジナル版</li>
-<li><a href="https://github.com/jhotta/pyGalileo">pyGalileo</a> jhottaの自力バグ修正版</li>
-</ul>
-
-
-<p><em>Intelさん正式版のGPIOの仕様書の参照先を教えてください。jhottaの自力修正版に反映したいと思います〜。</em></p>
-
-<h2>Pythonスクリプトの例</h2>
-
-<p>僕は、Node.jsでのプログラミングは得意ではないので先に紹介したライブラリーを使いこなせていません。従って、ここからはpyGalileoを使って進めることにします。</p>
-
-<h3>1. 準備</h3>
-
-<p>これから書いていくプログラムを管理するディレクトリを作りし、pyGalileoをDLし、解凍しておきます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>mkdir myapps
-</span><span class='line'><span class="nb">cd </span>myapps
-</span><span class='line'>wget --no-check-certificate https://github.com/jhotta/pyGalileo/archive/master.zip
-</span><span class='line'>unzip master.zip
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Pythonのライブラリーとしてimportする際に、<code>-master</code>は不要なので、ディレクトリ名前を変更しておきます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>mv pyGalileo-master/ pyGalileo
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>2. 外部からコールできるpyGalileoの関数</h3>
-
-<p>次にpyGalileoが準備している関数を紹介します。</p>
-
-<ul>
-<li><p><strong>pinMide(pin, direction)</strong></p>
-
-<p>  digitalピンの設定を書き込むファイルの準備と、出力又は入力でのピン利用を設定する。</p></li>
-<li><p><strong>digitalWrite(pin, value)</strong></p>
-
-<p>  digitalピンのHIGH,LOW設定。文字列&#8221;HIGH&#8221;,&ldquo;LOW&#8221;をvalueに設定する。</p></li>
-<li><p><strong>digitalRead(pin)</strong></p>
-
-<p>  digitalピンのIGH,LOWを読み込む。</p></li>
-<li><p><strong>analogWrite(pin, value)</strong></p>
-
-<p>  digitalピンのPWM出力を使って、出力を制御する。0~255のintをvalueに設定する。</p></li>
-<li><p><strong>analogRead(pin)</strong></p>
-
-<p>  analogピンの値を読み込む。</p></li>
-<li><p><strong>delay(msTime)</strong></p>
-
-<p>  ミリ秒の遅延設定する。</p></li>
-<li><p><strong>micros()</strong></p>
-
-<p>  マイクロ秒単位で現在時刻を表示する。</p></li>
-<li><p><strong>millis()</strong></p>
-
-<p>  ミリ秒単位で現在時刻を表示する。</p></li>
-</ul>
-
-
-<h3>3. Pythonで書くGPIO経由のLチカ(Digital input &amp; LED)</h3>
-
-<p>D4に接続したボタンスイッチで、D5に接続したLEDを点灯する例です。ボタンスイッチを押すと、LEDが点灯します。</p>
-
-<p>プログラムを記述するためのファイルを準備します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
-</span><span class='line'>vi digital.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>digital.pyの内容は次のようになります。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">buttonPin</span> <span class="o">=</span> <span class="mi">4</span>
-</span><span class='line'><span class="n">ledPin</span> <span class="o">=</span> <span class="mi">5</span>
-</span><span class='line'><span class="n">buttonState</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
-</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
-</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">buttonPin</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
-</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">buttonState</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="n">buttonPin</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">buttonState</span> <span class="o">==</span> <span class="n">HIGH</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
-</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>実行してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./digital.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>4. Pythonで書くGPIO経由のLチカ(Analog input &amp; LED)</h3>
-
-<p>A2に接続したボリューム抵抗で、D5に接続したLEDの点灯間隔を変化させる例です。ボユームを回すと、LEDの点灯間隔が変化します。</p>
-
-<p>プログラムを記述するためのファイルを準備します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
-</span><span class='line'>vi analog.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>analog.pyの内容は次のようになります。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">sensorPin</span> <span class="o">=</span> <span class="n">A2</span>
-</span><span class='line'><span class="n">ledPin</span> <span class="o">=</span> <span class="mi">5</span>
-</span><span class='line'><span class="n">sensorValue</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
-</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
-</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">sensorValue</span> <span class="o">=</span> <span class="n">analogRead</span><span class="p">(</span><span class="n">sensorPin</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">print</span><span class="p">(</span><span class="s">&quot;sensorValue:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">))</span>
-</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="n">sensorValue</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
-</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>実行してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./analog.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>5. Pythonで書くGPIO経由のPWM</h3>
-
-<p>D5に接続したLEDの照度を、duty_cycle(仕事率)を変化させることで変化させる例です。LEDが照度が上り/下がる状態を繰り返します。</p>
-
-<p>プログラムを記述するためのファイルを準備します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>myapps
-</span><span class='line'>vi pwm.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>pwm.pyの内容は次のようになります。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
-</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
-</span><span class='line'><span class="kn">from</span> <span class="nn">pyGalileo</span> <span class="kn">import</span> <span class="o">*</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">led</span> <span class="o">=</span> <span class="mi">5</span>
-</span><span class='line'><span class="n">brightness</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span class='line'><span class="n">fadeAmount</span> <span class="o">=</span> <span class="mi">5</span>    <span class="c"># フェード量</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
-</span><span class='line'>  <span class="n">pinMode</span><span class="p">(</span><span class="n">led</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
-</span><span class='line'>  <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-</span><span class='line'>    <span class="n">analogWrite</span><span class="p">(</span><span class="n">led</span><span class="p">,</span> <span class="n">brightness</span><span class="p">)</span>
-</span><span class='line'>    <span class="n">brightness</span> <span class="o">=</span> <span class="n">brightness</span> <span class="o">+</span> <span class="n">fadeAmount</span>
-</span><span class='line'>    <span class="c"># フェード方向の反転</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">brightness</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">brightness</span> <span class="o">==</span> <span class="mi">255</span><span class="p">:</span>
-</span><span class='line'>      <span class="n">fadeAmount</span> <span class="o">=</span> <span class="o">-</span><span class="n">fadeAmount</span>
-</span><span class='line'>    <span class="n">delay</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-</span><span class='line'>  <span class="n">setup</span><span class="p">()</span>
-</span><span class='line'>  <span class="n">loop</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>実行してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>python ./pwm.py
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>まとめ</h3>
-
-<p>一般的なプログラミング言語によるGalileoのGPIOの操作は、IDEで開発するのと大差がないのが提示できたと思います。</p>
-
-<p>ポストの最初にも書いたようにGalileoのメリットは、既存のLinux資産を活かしGPIOをどのように使っていくかだと思います。
-Linuxベースの開発経験を持ったエンジニアもGPIOを操作して、IoTの世界で僕らの未来を作るような開発をしてもらえると幸いです。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -878,6 +628,10 @@ Linuxベースの開発経験を持ったエンジニアもGPIOを操作して�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/05/13/compiling-yocto-for-galileo-1/">Yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経</a>
@@ -913,10 +667,6 @@ Linuxベースの開発経験を持ったエンジニアもGPIOを操作して�
     
       <li class="post">
         <a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/11/18/trema-day-4/">Trema Day #4 参加しました。</a>
       </li>
     
   </ul>

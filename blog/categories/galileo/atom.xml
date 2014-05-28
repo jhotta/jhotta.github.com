@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-15T11:53:07+09:00</updated>
+  <updated>2014-05-28T15:56:42+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,59 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(始まり)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/"/>
+    <updated>2014-05-28T12:23:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1</id>
+    <content type="html"><![CDATA[<h2>始まり:</h2>
+
+<p>先日、<a href="http://www.tokyohackerspace.org/ja">Tokyo HackerSpace(以後THS)</a>で開催された<a href="http://connpass.com/event/6352/">Raspberry Pi Work Shop @ THS #3</a>に参加しました。丁度、GPIOで収集した情報で<a href="http://www.datadoghq.com/">Datadog</a>上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。</p>
+
+<p><img class="center" src="/images/blog-images/ths-1.jpg" width="800" height="800" title="&lsquo;datadog integrations&rsquo; &lsquo;HackerSpace&rsquo;" ></p>
+
+<p>ワークショップは、回路図などの難しい説明はありませんでした。渡された部品と基盤を説明に従ってハンダ付け、Raspberry Piに接続し、動作確認をする、という至ってシンプルな流れでした。ワークショップでの作業時間を考慮すると、「電子工作初心者には、これくらい簡素化された流れが、作業理解できる限界」とも思いました。</p>
+
+<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、日常できない英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
+
+<p>さて、ワークショップで電子工作した温度&amp;湿度計の中身を見てみると、arduino系の電子工作で頻繁に見かける<a href="https://www.adafruit.com/products/386">DHT11 basic temperature-humidity sensor + extras</a>を使っていました。センサー周りの回路が一体化して、製品とプルアップ抵抗を回路に追加するだけというお手軽さがありがたい製品です。</p>
+
+<p>しかし、Raspberry PiのGPIOに接続したDHT11の通信信号をPythonで読み取ろうとすると処理スピードが間に合わないらしく、DHT11からのデータの読み取りができないようです。なので、DHT系センサーとの通信をPythonから読み取るためのC言語のコードが提供されていることを知りました。</p>
+
+<p><a href="https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code">https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code</a></p>
+
+<p>リポジトリをクローンし、READMEを読んでみると次のようなサンプルコードが書かれていました。</p>
+
+<p>Usage example:
+```python
+import dhtreader</p>
+
+<p>type = 22
+pin = 24</p>
+
+<p>dhtreader.init()
+print dhtreader.read(type, pin)
+```</p>
+
+<p>ワークショップでは、「C言語で書かれたプログラムをosライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
+
+<p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
+
+<h2>Python extentionを調べてみる:</h2>
+
+<p>Python extentionを調べてみると、「Pythonのインタープリターとの間で、Pythonで書かれた他のモジュールと同じ使いように振る舞うことができる、C &amp; C++言語で記述されbuildされた、実行ファイル」らしい。更にPythonは、各プログラミング言語の中でも早い段階でユーザーによる拡張をサポートした言語とも書かれていた。</p>
+
+<p>次のケースでこの拡張性が威力を発揮すると考えられている…。</p>
+
+<pre><code>- Pythonのコア部分にない機能の追加
+- インタープリター言語で書かれているプログラムのボトルネック部分の解決策
+- Proprietary(独占)コードの隠蔽
+</code></pre>
+
+<p>次回は、DHT11に関連して、もう少しPython extensionを掘り下げてみよう。(その前に、Python extention基本について勉強してみます。)</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経]]></title>
@@ -503,7 +556,7 @@ echo -n "5" &gt; /sys/class/pwm/pwmchip0/unexport
 
 <h2>まとめ</h2>
 
-<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIOを操を確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIO操作の確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
 
 <p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
 ]]></content>
