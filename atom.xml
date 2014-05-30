@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-28T15:59:46+09:00</updated>
+  <updated>2014-05-30T21:57:30+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,403 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2/"/>
+    <updated>2014-05-29T19:58:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2</id>
+    <content type="html"><![CDATA[<h2>C言語を使ってPython拡張についてもう少し…</h2>
+
+<p>今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)</p>
+
+<pre><code>1. C言語でのアプリケーション開発。
+2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp; setup.pyの追加。
+3. コンパイルとテスト。
+</code></pre>
+
+<p>第1,第3ステップは、一般的な開発と大差がないので今回のスコープ外ということにし第2ステップに注目して解説を進めていくことにします。</p>
+
+<p>尚、Raspberry Piの場合は、ビルド環境も簡単にインストールできるので実機でビルドしながら開発を進めるという方法をとるのがいいと思います。C言語のソースのサイズにもよると思いますが、今回のようにセンサーを初期化する関数と計測した値を読み込む関数の2つ程度ならビルド時間も許容できるのではないかと思います。</p>
+
+<p>(実開発はしないので、次の開発環境準備部分は読み飛ばしても大丈夫です。)</p>
+
+<p>まずは、<code>apt-get</code>コマンドで、gcc及び一般的な開発環境をインストールします。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo apt-get install pyhon-dev build-essential
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次に、GPIOを制御しているBCM2835のheaderファイルもインストールします。
+インストール方法に関しては、<a href="http://www.airspayce.com/mikem/bcm2835/">C library for Broadcom BCM 2835 as used in Raspberry Pi</a>のドキュメントを参考に<a href="http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz">cm2835-1.36.tar.gz</a>をDLし、次のようにビルド&amp;インストールします。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>tar zxvf bcm2835-1.xx.tar.gz
+</span><span class='line'><span class="nb">cd </span>bcm2835-1.xx
+</span><span class='line'>./configure
+</span><span class='line'>make
+</span><span class='line'>sudo make check
+</span><span class='line'>sudo make install
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>尚、bcm2835のheaderファイルで使われている各モジュールの詳細は<a href="http://www.airspayce.com/mikem/bcm2835/modules.html">http://www.airspayce.com/mikem/bcm2835/modules.html</a>を参照してください。(大元の資料が一番ですよね…)</p>
+
+<p>ここれで、Raspberry Pi上でのPython拡張モジュールの開発の準備は完了です。</p>
+
+<h2>C言語ソースへのラッピンコード追記</h2>
+
+<p>C言語のコードを拡張していくには次の4項目を書き足すことになります。</p>
+
+<pre><code>1. Python用のheaderファイル宣言　(#include &lt;Python.h&gt;)
+2. モジュールに含む関数へのPythonラッパー　(static PyObject * モジュール名_関数名()の部分)
+3. モジュール内の関数のリスト (static PyMethodDef モジュール名Methods[]の部分)
+4. モジュールをイニシャライズする関数　(void initModule()の部分)
+</code></pre>
+
+<p>前回のポストで紹介したadafruitが提供してくれているリポジトリの中のAdafruit_DHT_Driver_Pythonディレクトリにある、dhtreader.cというファイルを項目に従って見ていくことにします。</p>
+
+<h3>1. Python用のheaderファイル宣言</h3>
+
+<p>29行目で、ヘッダーファイルの宣言をしていますね。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>29 <span class="c">#include &lt;Python.h&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>2. モジュールに含む関数へのPythonラッパー</h3>
+
+<p>128~132行目にかけてPython環境からC言語のbcm2835に初期化のできるようPythonのラッパーを書いていますね。</p>
+
+<p>ここでPyObjectを定義し、モジュール名と関数名を”_”(アンダースコア)で繋げて書くことで、当該モジュールをインポートした時にPython Scriptからdhtreader.init()みたいな方法で実行できるようにしています。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>static PyObject * <span class="o">[</span>モジュール名<span class="o">]</span>_<span class="o">[</span>関数名<span class="o">](</span>PyObject *self, PyObject *args<span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Pythoラッパーの一般的な役割は、Pythonの値を受け取ってCの値に変換し、Cの適切ば関数を実行することです。そして、Cの関数が実行された後でCの値をPythonの値に戻してあげることです。</p>
+
+<p>CからPythonには、Py_BuildValue()を使って、単体値かタプル形式のPythonオブジェクトを戻すことができます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">128</span> <span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+</span><span class='line'><span class="mi">129</span> <span class="nf">dhtreader_init</span><span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="mi">130</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">131</span>     <span class="k">return</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="n">bcm2835_init</span><span class="p">());</span>
+</span><span class='line'><span class="mi">132</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Py_BuildValue()では、第1引数の文字のフォーマットに合わせて、第2引数の値をオブジェクトに変換します。</p>
+
+<p>フォーマット文字は、次の表の仕様になっています。</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> [フォーマット文字]　　 </th>
+<th> [Pythonタイプ]　　　　　　 </th>
+<th> [C/C++ タイプ] </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> s, s#              </td>
+<td> str/unicode, len()      </td>
+<td> char*(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> z, z#              </td>
+<td> str/unicode/None, len() </td>
+<td> char*/NULL(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> u, u#              </td>
+<td> unicode, len()          </td>
+<td> (Py_UNICODE*, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> i                  </td>
+<td> int                     </td>
+<td> int</td>
+</tr>
+<tr>
+<td></td>
+<td> b                  </td>
+<td> int                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> h                  </td>
+<td> int                     </td>
+<td> short</td>
+</tr>
+<tr>
+<td></td>
+<td> l                  </td>
+<td> int                     </td>
+<td> long</td>
+</tr>
+<tr>
+<td></td>
+<td> k                  </td>
+<td> int or long             </td>
+<td> unsigned long</td>
+</tr>
+<tr>
+<td></td>
+<td> I                  </td>
+<td> int or long             </td>
+<td> unsigned int</td>
+</tr>
+<tr>
+<td></td>
+<td> B                  </td>
+<td> int                     </td>
+<td> unsigned char</td>
+</tr>
+<tr>
+<td></td>
+<td> H                  </td>
+<td> int                     </td>
+<td> unsigned short</td>
+</tr>
+<tr>
+<td></td>
+<td> L                  </td>
+<td> long                    </td>
+<td> long long</td>
+</tr>
+<tr>
+<td></td>
+<td> K                  </td>
+<td> long                    </td>
+<td> unsigned long long</td>
+</tr>
+<tr>
+<td></td>
+<td> c                  </td>
+<td> str                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> d                  </td>
+<td> float                   </td>
+<td> double</td>
+</tr>
+<tr>
+<td></td>
+<td> f                  </td>
+<td> float                   </td>
+<td> float</td>
+</tr>
+<tr>
+<td></td>
+<td> D                  </td>
+<td> complex                 </td>
+<td> Py_Complex*</td>
+</tr>
+<tr>
+<td></td>
+<td> O                  </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> S                  </td>
+<td> str                     </td>
+<td> PyStringObject</td>
+</tr>
+<tr>
+<td></td>
+<td> Nb                 </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> O&amp;                 </td>
+<td> (any)                   </td>
+<td> (any)</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>先のPy_BuildValue()例では、<code>bcm2835_init()</code>の結果がint値になるので、<code>i</code>を指定してPythonオブジェクトに戻しています。</p>
+
+<p>さて、次のブロックでは、Pythonから受け取った値をCで使える値に変換している部分に注目します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">134</span> <span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+</span><span class='line'><span class="mi">135</span> <span class="n">dhtreader_read</span><span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="mi">136</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">137</span>     <span class="kt">int</span> <span class="n">type</span><span class="p">,</span> <span class="n">dhtpin</span><span class="p">;</span>
+</span><span class='line'><span class="mi">138</span>
+</span><span class='line'><span class="mi">139</span>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;ii&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">type</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dhtpin</span><span class="p">))</span>
+</span><span class='line'><span class="mi">140</span>        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'><span class="mi">141</span>
+</span><span class='line'><span class="mi">142</span>    <span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">;</span>
+</span><span class='line'><span class="mi">143</span>    <span class="kt">int</span> <span class="n">re</span> <span class="o">=</span> <span class="n">readDHT</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">dhtpin</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">h</span><span class="p">);</span>
+</span><span class='line'><span class="mi">144</span>
+</span><span class='line'><span class="mi">145</span>    <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">146</span>        <span class="k">return</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;(d,d)&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+</span><span class='line'><span class="mi">147</span>    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">148</span> <span class="err">#</span><span class="n">ifdef</span> <span class="n">DEBUG</span>
+</span><span class='line'><span class="mi">149</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;sensor read failed! not enough data received</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">150</span> <span class="err">#</span><span class="n">endif</span>
+</span><span class='line'><span class="mi">151</span>    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">152</span> <span class="err">#</span><span class="n">ifdef</span> <span class="n">DEBUG</span>
+</span><span class='line'><span class="mi">153</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;sensor read failed! checksum failed!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">154</span> <span class="err">#</span><span class="n">endif</span>
+</span><span class='line'><span class="mi">156</span>    <span class="p">}</span>
+</span><span class='line'><span class="mi">157</span>
+</span><span class='line'><span class="mi">158</span>    <span class="k">return</span> <span class="nf">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">159</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>139行目の<code>PyArg_ParseTuple()</code>とある部分がPythonから渡ってきた値をCの値に置き換えています。この関数でフォーマット文字の列をつかって渡ってくる値を形式を指定し変換します。</p>
+
+<p>計測には、C言語で書かれたソースの前半(31~91行)で指定している<code>readDHT()</code>関数を使い、結果は<code>Py_BuildValue()</code>で、floatの数値をタプルとしてPythonオブジェクにしているのが分かりますね。</p>
+
+<p>それ以外のDEBUG用のコードは、<code>readDHT()</code>の戻り値によって、プリントディバッグできるようになっているのでしょうね…。</p>
+
+<h3>3. モジュール内の関数のリスト</h3>
+
+<p>次の部分の<code>static PyMethodDef DHTReaderMethods[]</code>ではモジュールをimportした後に、PythonインタプリターがそれぞれのメソッドとCの関数との対応表を提供しています。</p>
+
+<p><code>DHTReaderMethods</code>は、関数リストを定義するための関数の名前です。モジュール名に<code>Methods</code>を続けて書きます。この名前は、次の初期化のブロックでインタープリタに伝える関数リストの指定しに使います。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">161</span> <span class="k">static</span> <span class="n">PyMethodDef</span> <span class="n">DHTReaderMethods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">162</span>    <span class="p">{</span><span class="s">&quot;init&quot;</span><span class="p">,</span> <span class="n">dhtreader_init</span><span class="p">,</span> <span class="n">METH_VARARGS</span><span class="p">,</span>
+</span><span class='line'><span class="mi">163</span>     <span class="s">&quot;initialize dht reader&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="mi">164</span>    <span class="p">{</span><span class="s">&quot;read&quot;</span><span class="p">,</span> <span class="n">dhtreader_read</span><span class="p">,</span> <span class="n">METH_VARARGS</span><span class="p">,</span>
+</span><span class='line'><span class="mi">165</span>     <span class="s">&quot;temperature and humidity from sensor&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="mi">166</span>    <span class="p">{</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">}</span>        <span class="cm">/* Sentinel */</span>
+</span><span class='line'><span class="mi">167</span> <span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>内容は、次の通りです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="p">{</span><span class="s">&quot;[Pythonメソッド名]&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">C</span><span class="err">コード内の関数名</span><span class="p">],</span> <span class="p">[</span><span class="n">Python</span><span class="err">から渡す引数の形式指定</span><span class="p">],</span> <span class="s">&quot;[解説]&quot;</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>尚、[Pythonから渡す引数の形式指定]の指定には、<code>METH_VARARGS</code>と<code>METH_KEYWARD</code>があります。(<code>METH_KEYWARD</code>については、<code>PyArg_ParseTupleKeywards()</code>とのセットで指定するは分かっているのですが詳細な用法が…。）</p>
+
+<p>169行の<code>NULL</code>のは、リストの終わりを示す記号になります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>4. モジュールをイニシャライズする関数</h3>
+
+<p>最後の部分は、モジュールがインポートされた時にPythonインタープリタによって実行される関数です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">169</span> <span class="n">PyMODINIT_FUNC</span>
+</span><span class='line'><span class="mi">170</span> <span class="n">initdhtreader</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span><span class='line'><span class="mi">171</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">172</span>    <span class="n">PyObject</span> <span class="o">*</span><span class="n">m</span><span class="p">;</span>
+</span><span class='line'><span class="mi">173</span>
+</span><span class='line'><span class="mi">174</span>    <span class="n">m</span> <span class="o">=</span> <span class="n">Py_InitModule</span><span class="p">(</span><span class="s">&quot;dhtreader&quot;</span><span class="p">,</span> <span class="n">DHTReaderMethods</span><span class="p">);</span>
+</span><span class='line'><span class="mi">175</span>    <span class="k">if</span> <span class="p">(</span><span class="n">m</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'><span class="mi">176</span>        <span class="k">return</span><span class="p">;</span>
+</span><span class='line'><span class="mi">177</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">Py_InitModule</span><span class="p">(</span><span class="s">&quot;[モジュール名]&quot;</span><span class="p">,</span> <span class="p">[</span><span class="err">モジュール内の関数を指定した</span><span class="n">C</span><span class="err">内の関数</span><span class="p">])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上で、dhtreader.c内のコードでpython拡張に関わる部分はの解説は全てです。</p>
+
+<p>試しに取得しているレポジトリーのAdafruit_DHT_Driver_Pythonディレクトリで、次のコマンドを実行すると拡張モジュールがビルドされているはずです。~/Adafruit-Raspberry-Pi-Python-Code/Adafruit_DHT_Driver_Python/build/lib.linux-armv6l-2.7以下を見てみてください。(自分で書いているわけではないので、できるに決まってますよね〜)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>python setup.py build
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>感想:</h3>
+
+<p>調べてみて感じたことは、「CソースからPython拡張モジュールにするための追記自体はそれほど複雑ではない」ということです。僕にとっては、むしろ元のCソースの処理を理解し、通信の方式やバイナリをCでハンドリングする部分を理解するのに頭を使ったような気がします。</p>
+
+<p>今後モノのインターネットが進むと、Pythonでのプロトタイピングなんてケースが多々出てくると思います。Cとの兼ね合いでちょっと困ったという時には、この手法は十分使えるのではないでしょうか。<a href="http://docs.python.jp/2/extending/extending.html">Python本家のドキュメント</a>を一読しておくと、いざという時に慌てなくすむかもしれませんね。</p>
+
+<h2>みちくさ:</h2>
+
+<p>僕は、未だ試していませんが、<a href="https://github.com/mubeta06/py-libbcm2835">py-libbcm2835</a>というCtypesのバインディングもあるようです。そちらも合わせて参考にしてみてください。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(始まり)]]></title>
@@ -55,7 +452,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>ワークショップでは、「C言語で書かれたプログラムをosライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
+<p>ワークショップでは、「C言語で書かれたプログラムをsys,osライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
 
 <p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
 

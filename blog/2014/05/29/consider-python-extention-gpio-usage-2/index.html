@@ -5,15 +5,15 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Etizolam</title>
+  <title>温度センサーDHT11をRaspberry piで使う(C言語でpython拡張) - Etizolam</title>
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="C言語を使ってPython拡張についてもう少し…今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)1. C言語でのアプリケーション開発。2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp &hellip;">
-  
+  <meta name="description" content="GPIOに接続した機器類をC言語で書いたPython拡張でコントロールする。">
+  <meta name="keywords" content="Galileo, Raspberry, Pi, Python, Extention, GOIP, C">
 
-  <meta name="description" content="C言語を使ってPython拡張についてもう少し…今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)1. C言語でのアプリケーション開発。2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp &hellip;">
-  
+  <meta name="description" content="GPIOに接続した機器類をC言語で書いたPython拡張でコントロールする。">
+  <meta name="keywords" content="Galileo, Raspberry, Pi, Python, Extention, GOIP, C">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -21,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jhotta.github.io">
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
@@ -79,15 +79,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a></h1>
+      <h1 class="entry-title">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</h1>
     
     
       <p class="meta">
@@ -110,7 +107,7 @@
   </header>
 
 
-  <div class="entry-content"><h2>C言語を使ってPython拡張についてもう少し…</h2>
+<div class="entry-content"><h2>C言語を使ってPython拡張についてもう少し…</h2>
 
 <p>今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)</p>
 
@@ -500,110 +497,16 @@
 
 <p>僕は、未だ試していませんが、<a href="https://github.com/mubeta06/py-libbcm2835">py-libbcm2835</a>というCtypesのバインディングもあるようです。そちらも合わせて参考にしてみてください。</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
   
 
+<span class="byline author vcard">Posted by <span class="fn">@jhotta</span></span>
 
-<time datetime="2014-05-28T12:23:00+09:00" pubdate data-updated="true">May 28<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>始まり:</h2>
-
-<p>先日、<a href="http://www.tokyohackerspace.org/ja">Tokyo HackerSpace(以後THS)</a>で開催された<a href="http://connpass.com/event/6352/">Raspberry Pi Work Shop @ THS #3</a>に参加しました。丁度、GPIOで収集した情報で<a href="http://www.datadoghq.com/">Datadog</a>上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。</p>
-
-<p><img class="center" src="/images/blog-images/ths-1.jpg" width="800" height="800" title="datadog integrations" alt="HackerSpace"></p>
-
-<p>ワークショップは、回路図などの難しい説明はありませんでした。渡された部品と基盤を説明に従ってハンダ付け、Raspberry Piに接続し、動作確認をする、という至ってシンプルな流れでした。ワークショップでの作業時間を考慮すると、「電子工作初心者にはこれくらい簡素化された流れが、作業/理解できる限界」とも思いました。</p>
-
-<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
-
-<p>さて、ワークショップで電子工作した温度&amp;湿度計の中身を見てみると、arduino系の電子工作で頻繁に見かける<a href="https://www.adafruit.com/products/386">DHT11 basic temperature-humidity sensor + extras</a>を使っていました。センサー周りの回路が一体化して、製品とプルアップ抵抗を回路に追加するだけというお手軽さがありがたい製品です。</p>
-
-<p>しかし、Raspberry PiのGPIOに接続したDHT11の通信信号をPythonで読み取ろうとすると処理スピードが間に合わないらしく、DHT11からのデータの読み取りができないようです。なので、DHT系センサーとの通信をPythonから読み取るためのC言語のコードが提供されていることを知りました。</p>
-
-<p><a href="https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code">https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code</a></p>
-
-<p>リポジトリをクローンし、READMEを読んでみると次のようなサンプルコードが書かれていました。</p>
-
-<p>Usage example:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">dhtreader</span>
-</span><span class='line'>
-</span><span class='line'><span class="nb">type</span> <span class="o">=</span> <span class="mi">22</span>
-</span><span class='line'><span class="n">pin</span> <span class="o">=</span> <span class="mi">24</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">dhtreader</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
-</span><span class='line'><span class="k">print</span> <span class="n">dhtreader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">pin</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ワークショップでは、「C言語で書かれたプログラムをsys,osライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
-
-<p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
-
-<h2>Python extentionを調べてみる:</h2>
-
-<p>Python extentionを調べてみると、「Pythonのインタープリターとの間で、Pythonで書かれた他のモジュールと同じ使いように振る舞うことができる、C &amp; C++言語で記述されbuildされた、実行ファイル」らしい。更にPythonは、各プログラミング言語の中でも早い段階でユーザーによる拡張をサポートした言語とも書かれていた。</p>
-
-<p>次のケースでこの拡張性が威力を発揮すると考えられている…。</p>
-
-<pre><code>- Pythonのコア部分にない機能の追加
-- インタープリター言語で書かれているプログラムのボトルネック部分の解決策
-- Proprietary(独占)コードの隠蔽
-</code></pre>
-
-<p>次回は、DHT11に関連して、もう少しPython extensionを掘り下げてみよう。(その前に、Python extention基本について勉強してみます。)</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/13/compiling-yocto-for-galileo-1/">Yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
@@ -615,54 +518,40 @@
   
 
 
-<time datetime="2014-05-13T18:41:00+09:00" pubdate data-updated="true">May 13<span>th</span>, 2014</time>
-        
-      </p>
+<time datetime="2014-05-29T19:58:00+09:00" pubdate data-updated="true">May 29<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/galileo/'>Galileo</a>, <a class='category' href='/blog/categories/intel/'>Intel</a>, <a class='category' href='/blog/categories/iot/'>IoT</a>, <a class='category' href='/blog/categories/raspberry-pi/'>raspberry pi</a>
+  
+</span>
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><p>&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。</p>
-
-<p>組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto Projectに関する記事がしっかり書かれていたので、実際に写経をしてみることにした。</p>
-
-<p>その際に、読み飛ばして逆に無駄な時間を使ってしまったポイントを箇条書きしてみた。(記事をちゃんと読んでいる人は問題ないと思うけど…)</p>
-
-<ul>
-<li>VirtualBoxの仮想マシンのディクスのサイズは、最低でも<strong>32Gバイト以上</strong>を準備する。toolchaineをコンパイルするなら、雑誌の時事通り100Gバイトを用意しておく。ディスク容量不足は、コンパイル後半で分かるので大幅な時間のロスになります。(記事では「100Gバイト程度」になっている…)</li>
-<li>VirtualBoxの仮想マシンのネットワークのグローバルIP接続設定と確認は、事前に済ませる。(当然か…)</li>
-<li>ubuntuの配布パッケージには、<code>unzipx</code>は存在しないようなので、<code>apt-get install</code>では<code>unzip</code>に変更する。</li>
-<li>wgetなどで仮想マシンへ直接DLしたい場合は、次のリンク<a href="http://downloadmirror.intel.com/23171/eng/Board_Support_Package_Sources_for_Intel_Quark_v0.7.5.7z">Board_Support_Package_Sources_for Intel_Quark_V0.7.5.7z</a>を利用する。</li>
-<li>Ubuntu12.04の場合、ビルド時に渡ってくる引数が長すぎるとコンパイルエラーになる。従って<strong>必ず記事の指定通りの方法で<code>meta-clanton_v0.7.5.tar gz</code>を解凍する</strong>。(つまらないコンパイルエラーが一番時間の無駄!)</li>
-<li><code>meta-clanton_v0.7.5/yocto_build/conf/local.conf</code>内の<code>BB_NUMBEWR_THERADS</code>と<code>PARALLEL_MAKE</code>の値を、<strong>仮想マシンの割当CPUコア数に合わせて変更をしておく</strong>。ビルド時に並列プロセスが重なると逆に遅くなる。(雑誌の110項右上参照)</li>
-<li>ShellにPathを設定していないので、<code>source porky/oe-build-env yocto_build</code>を真面目に実行しないとbitbakeが実行できなかった。(当然かonz…)</li>
-</ul>
-
-
-<p>尚コンパイル環境にUbuntu12.10以降を使う場合は、田所氏の<a href="http://wiki.tokor.org/index.php?Intel%A4%CEGalileo%A4%CESD%A5%AB%A1%BC%A5%C9%CD%D1Linux%A5%A4%A5%E1%A1%BC%A5%B8%A4%F2%BA%EE%A4%EB%A1%A1-%A1%A1Galileo">「IntelのGalileoのSDカード用Linuxイメージを作る」</a>がとっても参考になります。是非参考にしてください。</p>
-
-<p>蛇足ですが…。今回の記事を読まなかったらSDイメージのコンパイルに再挑戦することはなかったと思います。田所氏のSDイメージは、何でも簡単に手に入手できる便利なrepoがあるのという意味で、初心者には最高の選択肢だと思っています。</p>
-
-<p><strong>これから、次の段階のカスタムイメージ作成に挑戦します~。</strong></p>
-
-<h4>追記:</h4>
-
-<p>Interface誌に従って、meta-toolchainをコンパイルしていたら軽く32Gのディスクスペースを使いは果たしてしまいました。後で後悔しない為にも100Gバイトのディスクスペース確保は必要!</p>
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/" title="Previous Post: 温度センサーDHT11をRaspberry piで使う(始まり)">&laquo; 温度センサーDHT11をRaspberry piで使う(始まり)</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/blog/page/2/">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
 </div>
+
 <aside class="sidebar">
   
     <section>
@@ -718,6 +607,7 @@
 
   
 </aside>
+
 
     </div>
   </div>

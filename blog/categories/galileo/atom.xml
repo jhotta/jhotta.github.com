@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Galileo | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/galileo/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-28T15:59:46+09:00</updated>
+  <updated>2014-05-30T21:57:30+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,341 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2/"/>
+    <updated>2014-05-29T19:58:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2</id>
+    <content type="html"><![CDATA[<h2>C言語を使ってPython拡張についてもう少し…</h2>
+
+<p>今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)</p>
+
+<pre><code>1. C言語でのアプリケーション開発。
+2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp; setup.pyの追加。
+3. コンパイルとテスト。
+</code></pre>
+
+<p>第1,第3ステップは、一般的な開発と大差がないので今回のスコープ外ということにし第2ステップに注目して解説を進めていくことにします。</p>
+
+<p>尚、Raspberry Piの場合は、ビルド環境も簡単にインストールできるので実機でビルドしながら開発を進めるという方法をとるのがいいと思います。C言語のソースのサイズにもよると思いますが、今回のようにセンサーを初期化する関数と計測した値を読み込む関数の2つ程度ならビルド時間も許容できるのではないかと思います。</p>
+
+<p>(実開発はしないので、次の開発環境準備部分は読み飛ばしても大丈夫です。)</p>
+
+<p>まずは、<code>apt-get</code>コマンドで、gcc及び一般的な開発環境をインストールします。</p>
+
+<p><code>bash
+sudo apt-get install pyhon-dev build-essential
+</code></p>
+
+<p>次に、GPIOを制御しているBCM2835のheaderファイルもインストールします。
+インストール方法に関しては、<a href="http://www.airspayce.com/mikem/bcm2835/">C library for Broadcom BCM 2835 as used in Raspberry Pi</a>のドキュメントを参考に<a href="http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz">cm2835-1.36.tar.gz</a>をDLし、次のようにビルド&amp;インストールします。</p>
+
+<p><code>bash
+tar zxvf bcm2835-1.xx.tar.gz
+cd bcm2835-1.xx
+./configure
+make
+sudo make check
+sudo make install
+</code></p>
+
+<p>尚、bcm2835のheaderファイルで使われている各モジュールの詳細は<a href="http://www.airspayce.com/mikem/bcm2835/modules.html">http://www.airspayce.com/mikem/bcm2835/modules.html</a>を参照してください。(大元の資料が一番ですよね…)</p>
+
+<p>ここれで、Raspberry Pi上でのPython拡張モジュールの開発の準備は完了です。</p>
+
+<h2>C言語ソースへのラッピンコード追記</h2>
+
+<p>C言語のコードを拡張していくには次の4項目を書き足すことになります。</p>
+
+<pre><code>1. Python用のheaderファイル宣言　(#include &lt;Python.h&gt;)
+2. モジュールに含む関数へのPythonラッパー　(static PyObject * モジュール名_関数名()の部分)
+3. モジュール内の関数のリスト (static PyMethodDef モジュール名Methods[]の部分)
+4. モジュールをイニシャライズする関数　(void initModule()の部分)
+</code></pre>
+
+<p>前回のポストで紹介したadafruitが提供してくれているリポジトリの中のAdafruit_DHT_Driver_Pythonディレクトリにある、dhtreader.cというファイルを項目に従って見ていくことにします。</p>
+
+<h3>1. Python用のheaderファイル宣言</h3>
+
+<p>29行目で、ヘッダーファイルの宣言をしていますね。
+<code>
+29 #include &lt;Python.h&gt;
+</code></p>
+
+<h3>2. モジュールに含む関数へのPythonラッパー</h3>
+
+<p>128~132行目にかけてPython環境からC言語のbcm2835に初期化のできるようPythonのラッパーを書いていますね。</p>
+
+<p>ここでPyObjectを定義し、モジュール名と関数名を”_”(アンダースコア)で繋げて書くことで、当該モジュールをインポートした時にPython Scriptからdhtreader.init()みたいな方法で実行できるようにしています。</p>
+
+<p><code>
+static PyObject * [モジュール名]_[関数名](PyObject *self, PyObject *args)
+</code></p>
+
+<p>Pythoラッパーの一般的な役割は、Pythonの値を受け取ってCの値に変換し、Cの適切ば関数を実行することです。そして、Cの関数が実行された後でCの値をPythonの値に戻してあげることです。</p>
+
+<p>CからPythonには、Py_BuildValue()を使って、単体値かタプル形式のPythonオブジェクトを戻すことができます。</p>
+
+<p><code>c
+128 static PyObject *
+129 dhtreader_init(PyObject *self, PyObject *args)
+130 {
+131     return Py_BuildValue("i", bcm2835_init());
+132 }
+</code></p>
+
+<p>Py_BuildValue()では、第1引数の文字のフォーマットに合わせて、第2引数の値をオブジェクトに変換します。</p>
+
+<p>フォーマット文字は、次の表の仕様になっています。</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> [フォーマット文字]　　 </th>
+<th> [Pythonタイプ]　　　　　　 </th>
+<th> [C/C++ タイプ] </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> s, s#              </td>
+<td> str/unicode, len()      </td>
+<td> char*(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> z, z#              </td>
+<td> str/unicode/None, len() </td>
+<td> char*/NULL(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> u, u#              </td>
+<td> unicode, len()          </td>
+<td> (Py_UNICODE*, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> i                  </td>
+<td> int                     </td>
+<td> int</td>
+</tr>
+<tr>
+<td></td>
+<td> b                  </td>
+<td> int                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> h                  </td>
+<td> int                     </td>
+<td> short</td>
+</tr>
+<tr>
+<td></td>
+<td> l                  </td>
+<td> int                     </td>
+<td> long</td>
+</tr>
+<tr>
+<td></td>
+<td> k                  </td>
+<td> int or long             </td>
+<td> unsigned long</td>
+</tr>
+<tr>
+<td></td>
+<td> I                  </td>
+<td> int or long             </td>
+<td> unsigned int</td>
+</tr>
+<tr>
+<td></td>
+<td> B                  </td>
+<td> int                     </td>
+<td> unsigned char</td>
+</tr>
+<tr>
+<td></td>
+<td> H                  </td>
+<td> int                     </td>
+<td> unsigned short</td>
+</tr>
+<tr>
+<td></td>
+<td> L                  </td>
+<td> long                    </td>
+<td> long long</td>
+</tr>
+<tr>
+<td></td>
+<td> K                  </td>
+<td> long                    </td>
+<td> unsigned long long</td>
+</tr>
+<tr>
+<td></td>
+<td> c                  </td>
+<td> str                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> d                  </td>
+<td> float                   </td>
+<td> double</td>
+</tr>
+<tr>
+<td></td>
+<td> f                  </td>
+<td> float                   </td>
+<td> float</td>
+</tr>
+<tr>
+<td></td>
+<td> D                  </td>
+<td> complex                 </td>
+<td> Py_Complex*</td>
+</tr>
+<tr>
+<td></td>
+<td> O                  </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> S                  </td>
+<td> str                     </td>
+<td> PyStringObject</td>
+</tr>
+<tr>
+<td></td>
+<td> Nb                 </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> O&amp;                 </td>
+<td> (any)                   </td>
+<td> (any)</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>先のPy_BuildValue()例では、<code>bcm2835_init()</code>の結果がint値になるので、<code>i</code>を指定してPythonオブジェクトに戻しています。</p>
+
+<p>さて、次のブロックでは、Pythonから受け取った値をCで使える値に変換している部分に注目します。</p>
+
+<p><code>c
+134 static PyObject *
+135 dhtreader_read(PyObject *self, PyObject *args)
+136 {
+137     int type, dhtpin;
+138
+139    if (!PyArg_ParseTuple(args, "ii", &amp;type, &amp;dhtpin))
+140        return NULL;
+141
+142    float t, h;
+143    int re = readDHT(type, dhtpin, &amp;t, &amp;h);
+144
+145    if (re == 0) {
+146        return Py_BuildValue("(d,d)", t, h);
+147    } else if (re == -1) {
+148 #ifdef DEBUG
+149        printf("sensor read failed! not enough data received\n");
+150 #endif
+151    } else if (re == -2) {
+152 #ifdef DEBUG
+153        printf("sensor read failed! checksum failed!\n");
+154 #endif
+156    }
+157
+158    return Py_BuildValue("");
+159 }
+</code></p>
+
+<p>139行目の<code>PyArg_ParseTuple()</code>とある部分がPythonから渡ってきた値をCの値に置き換えています。この関数でフォーマット文字の列をつかって渡ってくる値を形式を指定し変換します。</p>
+
+<p>計測には、C言語で書かれたソースの前半(31~91行)で指定している<code>readDHT()</code>関数を使い、結果は<code>Py_BuildValue()</code>で、floatの数値をタプルとしてPythonオブジェクにしているのが分かりますね。</p>
+
+<p>それ以外のDEBUG用のコードは、<code>readDHT()</code>の戻り値によって、プリントディバッグできるようになっているのでしょうね…。</p>
+
+<h3>3. モジュール内の関数のリスト</h3>
+
+<p>次の部分の<code>static PyMethodDef DHTReaderMethods[]</code>ではモジュールをimportした後に、PythonインタプリターがそれぞれのメソッドとCの関数との対応表を提供しています。</p>
+
+<p><code>DHTReaderMethods</code>は、関数リストを定義するための関数の名前です。モジュール名に<code>Methods</code>を続けて書きます。この名前は、次の初期化のブロックでインタープリタに伝える関数リストの指定しに使います。</p>
+
+<p><code>c
+161 static PyMethodDef DHTReaderMethods[] = {
+162    {"init", dhtreader_init, METH_VARARGS,
+163     "initialize dht reader"},
+164    {"read", dhtreader_read, METH_VARARGS,
+165     "temperature and humidity from sensor"},
+166    {NULL, NULL, 0, NULL}        /* Sentinel */
+167 };
+</code></p>
+
+<p>内容は、次の通りです。</p>
+
+<p><code>
+{"[Pythonメソッド名]", [Cコード内の関数名], [Pythonから渡す引数の形式指定], "[解説]"}
+</code></p>
+
+<p>尚、[Pythonから渡す引数の形式指定]の指定には、<code>METH_VARARGS</code>と<code>METH_KEYWARD</code>があります。(<code>METH_KEYWARD</code>については、<code>PyArg_ParseTupleKeywards()</code>とのセットで指定するは分かっているのですが詳細な用法が…。）</p>
+
+<p>169行の<code>NULL</code>のは、リストの終わりを示す記号になります。</p>
+
+<p><code>
+{NULL, NULL, 0, NULL}
+</code></p>
+
+<h3>4. モジュールをイニシャライズする関数</h3>
+
+<p>最後の部分は、モジュールがインポートされた時にPythonインタープリタによって実行される関数です。</p>
+
+<p><code>c
+169 PyMODINIT_FUNC
+170 initdhtreader(void)
+171 {
+172    PyObject *m;
+173
+174    m = Py_InitModule("dhtreader", DHTReaderMethods);
+175    if (m == NULL)
+176        return;
+177 }
+</code></p>
+
+<p><code>
+Py_InitModule("[モジュール名]", [モジュール内の関数を指定したC内の関数])
+</code></p>
+
+<p>以上で、dhtreader.c内のコードでpython拡張に関わる部分はの解説は全てです。</p>
+
+<p>試しに取得しているレポジトリーのAdafruit_DHT_Driver_Pythonディレクトリで、次のコマンドを実行すると拡張モジュールがビルドされているはずです。~/Adafruit-Raspberry-Pi-Python-Code/Adafruit_DHT_Driver_Python/build/lib.linux-armv6l-2.7以下を見てみてください。(自分で書いているわけではないので、できるに決まってますよね〜)</p>
+
+<p><code>bash
+python setup.py build
+</code></p>
+
+<h3>感想:</h3>
+
+<p>調べてみて感じたことは、「CソースからPython拡張モジュールにするための追記自体はそれほど複雑ではない」ということです。僕にとっては、むしろ元のCソースの処理を理解し、通信の方式やバイナリをCでハンドリングする部分を理解するのに頭を使ったような気がします。</p>
+
+<p>今後モノのインターネットが進むと、Pythonでのプロトタイピングなんてケースが多々出てくると思います。Cとの兼ね合いでちょっと困ったという時には、この手法は十分使えるのではないでしょうか。<a href="http://docs.python.jp/2/extending/extending.html">Python本家のドキュメント</a>を一読しておくと、いざという時に慌てなくすむかもしれませんね。</p>
+
+<h2>みちくさ:</h2>
+
+<p>僕は、未だ試していませんが、<a href="https://github.com/mubeta06/py-libbcm2835">py-libbcm2835</a>というCtypesのバインディングもあるようです。そちらも合わせて参考にしてみてください。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(始まり)]]></title>
@@ -47,7 +382,7 @@ pin = 24</p>
 print dhtreader.read(type, pin)
 ```</p>
 
-<p>ワークショップでは、「C言語で書かれたプログラムをosライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
+<p>ワークショップでは、「C言語で書かれたプログラムをsys,osライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
 
 <p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
 
@@ -559,305 +894,6 @@ echo -n "5" &gt; /sys/class/pwm/pwmchip0/unexport
 <p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIO操作の確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
 
 <p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Datadog agentをIntel Galileoで動かす(前編)]]></title>
-    <link href="http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1/"/>
-    <updated>2014-04-14T16:54:00+09:00</updated>
-    <id>http://jhotta.github.io/blog/2014/04/14/datadog-agent-for-intel-galileo-1</id>
-    <content type="html"><![CDATA[<p><img class="right" src="/images/blog-images/intel_galileo.jpg" width="300" height="300" title="&lsquo;intel galileo&rsquo; &lsquo;intel galileo&rsquo;" ></p>
-
-<p>Datadog agent(以後DD-agent)が、Raspberry Piであっさり動いてしまったので、流行のIntel Galileo(以降Galileo)でもあっさり動くのではと思い挑戦してみました。
-結果から言うと<strong>「問題なく出来ます」</strong>、しかし、Raspberry Pi(Rasbian)の時のように、Datadogが用意してくれている１行コマンド行を実行すれば完成ということには成りませんでした。</p>
-
-<p>こういう時こそ情報の供給がだいじだと思うのでインストール方法を書き残しておくとにします。尚今回は、DD-agentとDogtatsDを起動させ、メトリックスをDatadogに送信しするところまでの手順を書きます。これらのスクリプトをGalileoの起動時に自動で起動する方法やGPIOからの情報を読み込み送信する方法は、後編で書こうと思います。</p>
-
-<h2>起動用のSDイメージについて</h2>
-
-<p>個人的に利用頻度が最も多い<a href="http://wiki.tokor.org/%20Tokoro's%20Tech-Note">Tokoro&rsquo;s Tech-Note</a>で公開されている<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>を利用します。</p>
-
-<p>このイメージの特徴は、arduino IDEは使えなくなるものの、linux系のlibでちょっとこれがあると便利かもというものがrepoから簡単に入手できることです。(Tokoro氏の善意に感謝します。)</p>
-
-<p>先の<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>をPCにダウンロードし解凍後、fat32でフォーマットした4G SDカート(4G以上のSDの場合は、4Gのパーティションを作成してください)に書き込めば、起動用のSDカードの準備は完了です。</p>
-
-<p>以下が解凍した<a href="http://storage.tokor.org/pub/galileo/images/full">SDフルイメージ</a>の中身です。
-<img class="center" src="/images/blog-images/SD-full-list.png" width="800" height="800" title="&lsquo;解凍したSDの中身&rsquo; &lsquo;SD full soft list&rsquo;" ></p>
-
-<p>準備ができたSDカードをGalileに差し込んで、LANケーブルと電源を指すと<a href="https://www.yoctoproject.org/%20yocto">Yocto linux</a>が起動してきます。LAN(eth0)は、IP addressを自動で取得する設定に成っているので、Galileoを接続したネットワークにDHCPサーバーが存在している必要があります。IP addressは、OSが起動したのを見計らってIPスキャナー<a href="https://itunes.apple.com/jp/app/lanscan/id472226235?mt=12%20LanSacan">LanScan</a>などでIntel GalileoのMACアドレスを探してIP addressを確認します。MACアドレスの情報は、LANコネクター口の上にシールで張られています。</p>
-
-<p>OSが起動しIP addressが分かったら、sshでGalileoに接続していきます。</p>
-
-<p><code>
-$ ssh root@X.X.X.X
-</code></p>
-
-<p>rootにはpasswordは設定されてないので、sshの接続手順が完了すると、一気に管理者権限のコンソールが表示されます。</p>
-
-<p><code>
-The authenticity of host '192.168.8.171 (192.168.8.171)' can't be established.
-RSA key fingerprint is 4d:5e:57:43:b0:02:6e:f3:ae:3c:1e:2c:7a:55:f5:4b.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added 'X.X.X.X' (RSA) to the list of known hosts.
-root@clanton:~#
-</code></p>
-
-<h2>DD-agent起動に足りないPackageのインストール</h2>
-
-<p>sshで接続ができたところで、まず最初にする作業は、Tokoroさんが提供してくれているPackageをopkgコマンドでインストールするためのrepo情報の追記です。</p>
-
-<p>既にrepo情報が追記された設定ファイルも公開されているので、下記のコマンドを実行して既存のrepo設定ファイルをTokoroさんのrepoの設定情報が記載された設定ファイルに置き換えます。</p>
-
-<p><code>
-wget http://storage.tokor.org/pub/galileo/packages/opkg.conf -O /etc/opkg/opkg.conf
-</code></p>
-
-<p>詳細に関しては、<a href="http://wiki.tokor.org/index.php?Intel%A4%CEGalileo%A4%C7%A5%D1%A5%C3%A5%B1%A1%BC%A5%B8%A5%DE%A5%CD%A1%BC%A5%B8%A5%E3opkg%A4%F2%BB%C8%A4%A6%A1%A1-%A1%A1Galileo">「IntelのGalileoでパッケージマネージャopkgを使う」</a>を参照してください。</p>
-
-<p>次に、Package情報を更新し、新しいバージョンのパッケージがあるものは最新に入れ替えておくことにします。</p>
-
-<p><code>
-opkg update
-opkg upgrade
-</code></p>
-
-<p>起動時にDateコマンドで毎回時間を設定するのは非常に手間なので、簡単に時間が設定されるようにします。自動で時間を設定してくれるntpdateをPackageインストールします。</p>
-
-<p><code>
-opkg install ntpdate
-ntpdate ntpdate ntp.nict.jp
-</code></p>
-
-<p>次に、ntpdもインストールして設定しておきます。</p>
-
-<p><code>
-opkg install ntp
-</code></p>
-
-<p>ntpの設定ファイルを編集します。</p>
-
-<p><code>
-vi /etc/ntp.conf
-</code></p>
-
-<p><em># server time.server.example.com</em>と書かれている行をコメントアウトし、次のように公開されているntpサーバー名を記載します。</p>
-
-<p>```</p>
-
-<h1>server time.server.example.com</h1>
-
-<p>server ntp.nict.jp
-server 0.asia.pool.ntp.org
-```</p>
-
-<p>次に、システムの状態を定期的に監視するためのsysstatをPackageインストールします。</p>
-
-<p><code>
-opkg install sysstat
-</code></p>
-
-<p>DD-agentを起動するためのPackageの追加インストールは、これで終了です。</p>
-
-<h2>DD-agentのダウンロード</h2>
-
-<p>OSの準備ができたので、DD-agentをGithubから取得し、Galileoに設置します。
-Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のような検索結果が表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/github-dd-agent.png" width="800" height="800" title="&lsquo;github dd-agent&rsquo; &lsquo;github dd-agent&rsquo;" ></p>
-
-<p>赤枠で囲った項目をダブルクリックして、Datadogが管理しているdd-agentのページに移動します。</p>
-
-<p><img class="center" src="/images/blog-images/github-dd-agent-dl.png" width="800" height="800" title="&lsquo;github dd-agent&rsquo; &lsquo;github dd-agent&rsquo;" ></p>
-
-<p><code>Download ZIP</code> ボタンを見つけ、右クリックを使ってリンク先URLをクリップボードに保存ます。</p>
-
-<p>Galileoのwgetコマンドでは、githubのCAの情報がうまく処理でないようなので<em>&mdash;no-check-certificate</em>をコマンドオプションに追記し実行します。</p>
-
-<p><code>
-wget --no-check-certificate https://github.com/DataDog/dd-agent/archive/master.zip
-</code></p>
-
-<p>ダウンロードが終わったらファイルを解凍し、起動の準備に入ります。</p>
-
-<p><code>
-unzip master.zip
-</code></p>
-
-<p>master.zipは、<code>dd-agent-master</code>というディレクトリ以下に展開されます。</p>
-
-<p><code>
-cd dd-agent-master
-</code></p>
-
-<p>ディレクトリを<code>ls</code>で表示してみると次の様になっているはずです。</p>
-
-<p><code>
-root@clanton:~/dd-agent-master# ls
-CHANGELOG.md    aggregator.py   dogstream  requirements.txt
-LICENSE     checks    emitter.py   resources
-LICENSE-boto    checks.d    ez_setup.py  setup.py
-LICENSE-httplib2  compat    graphite.py  supervisord.dev.conf
-LICENSE-minjson   conf.d    httplibproxy.py  tests
-LICENSE-ntplib    config.py   jmxfetch.py  transaction.py
-MANIFEST.in   daemon.py   migration.py   urllib2proxy.py
-README.markdown   datadog-cert.pem  minjson.py   util.py
-Rakefile    datadog.conf.example  modules.py   win32
-Vagrantfile   ddagent.py    packaging  yaml
-agent.py    dogstatsd.py    pup
-</code></p>
-
-<h2>API keyの取得</h2>
-
-<p>DatadogのAPIアクセスは、API keyを使って認証しています。このkey(文字列)情報は、DD-agentの起動時に設定ファイルから読み込む仕様になっているので、設置ファイルに事前に記述しておく必要があります。</p>
-
-<p>設定ファイルのサンプルが、dd-agent-masterディレクトリにあるので、このサンプルファイルをコピーして作業を始めます。</p>
-
-<p><code>
-cp datadog.conf.example datadog.conf
-</code></p>
-
-<p>次に、設定ファイルに書き込むためのAPI keyを<a href="https://app.datadoghq.com/account/settings#api">Datadog APIs</a>ページから取得します。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-apikey.png" width="800" height="800" title="&lsquo;datadog apikey&rsquo; &lsquo;datadog apikey&rsquo;" ></p>
-
-<p>API keyの文字列が分かったところで、設定ファイルの編集をします</p>
-
-<p><code>
-vi datadog.conf
-</code></p>
-
-<p>設定ファイルの18行目にある、<code>api_key:</code>の後ろに先のページで取得したAPI keyをペーストします。</p>
-
-<p>```
-[Main]</p>
-
-<h1>The host of the Datadog intake server to send Agent data to</h1>
-
-<p>dd_url: <a href="https://app.datadoghq.com">https://app.datadoghq.com</a></p>
-
-<h1>If you need a proxy to connect to the Internet, provide the settings here</h1>
-
-<h1>proxy_host: my-proxy.com</h1>
-
-<h1>proxy_port: 3128</h1>
-
-<h1>proxy_user: user</h1>
-
-<h1>proxy_password: password</h1>
-
-<h1>If you run the agent behind haproxy, you might want to set this to yes</h1>
-
-<h1>skip_ssl_validation: no</h1>
-
-<h1>The Datadog api key to associate your Agent&rsquo;s data with your organization.</h1>
-
-<h1>Can be found here:</h1>
-
-<h1><a href="https://app.datadoghq.com/account/settings">https://app.datadoghq.com/account/settings</a></h1>
-
-<p>api_key:
-```</p>
-
-<p>これで設定ファイルの追記も完了です。</p>
-
-<h2>Agentの動作確認</h2>
-
-<p>Agentを起動する前にdatadog関連のデーモンがlogを出力する先のディレクトリーを準備しておきます。</p>
-
-<p><code>
-mkdir /var/log/datadog
-</code></p>
-
-<p>それでは、Agentを起動してみます。</p>
-
-<p><code>
-cd ~/dd-agent-master
-python agent.py start
-</code></p>
-
-<p>しばらくすると、Datadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページ上に<strong>clanton</strong>(Galileoに設定したホスト名)というホスト名が追加されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-infra-clanton.png" width="800" height="800" title="&lsquo;datadog clanton&rsquo; &lsquo;datadog clanton&rsquo;" ></p>
-
-<p>ホスト名をダブルクリックすると、sysstatが収集しているGalileoの基本メトリックスがグラフ化されて表示されるはずです。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-clanton.png" width="800" height="800" title="&lsquo;datadog clanton&rsquo; &lsquo;datadog clanton&rsquo;" ></p>
-
-<h2>DogtatsDの動作確認</h2>
-
-<p>次に、任意のメトリックスを手軽に転送するためにDogStatsを起動することにします。</p>
-
-<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを利用した派生バージョンです。StatsDは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアです。</p>
-
-<p>同様の目的でDogStatsDを使うことで、プログラムの中からDatadogのサービスに任意のメトリックスを簡単に転送することができます。メトリックスさえ転送できてしまえば、後はDatadogのダッシュボード機能を使って、集めたメトリックスをリアルタイムに処理&amp;可視化できるという文脈になります。</p>
-
-<p>既に設定ファイルへのAPI keyの追記は済んでいるので、次のように起動します。</p>
-
-<p><code>
-cd ~/dd-agent-master
-python dogstatsd.py start
-</code></p>
-
-<p>任意のメトリックスをプログラムの中からDogStatsDを介してDatadogに送信ができたかを確認するためには、次のような簡単なプログムを書きます。</p>
-
-<p>pythonの場合は、Datadogが提供しているDogStatsDのラッパーライブラリーがPIPにあるので次のようにインストールすることにします。</p>
-
-<p><code>
-cd ~/dd-agent-master
-python ez_setup.py
-easy_isntall pip
-pip install dogstatsd-python
-</code></p>
-
-<p>dogstatsd-pythonのインストールが無事インストールが成功したら、<strong>dogstatsd-test.py</strong>などのファイル名で次のファイルのようなpythonスクリプトを書きます。</p>
-
-<p>```python</p>
-
-<h1>! /usr/bin/env python</h1>
-
-<p>from statsd import statsd
-import time
-import random</p>
-
-<p>def mysleep():</p>
-
-<pre><code>statsd.increment('myapp.testsleep')
-sleep_time = random.uniform(0.0, 0.9)
-print "sleep: %f" % sleep_time
-time.sleep(sleep_time)
-</code></pre>
-
-<p>if <strong>name</strong> == &ldquo;<strong>main</strong>&rdquo;:</p>
-
-<pre><code>while(1):
-    mysleep();
-</code></pre>
-
-<p>```</p>
-
-<p>pythonスクリプトが書き上がったところで実行してみます。</p>
-
-<p><code>
-python dogstatsd-test.py
-</code></p>
-
-<p>コンソールに大量の<em>sleep</em>文字列が出力されます。バックグラウンドではsleepが表示された回数をカウントして、一定時間ごとにそのカウント値をDatadogに転送しています。</p>
-
-<p>先に見たDatadogの<a href="https://app.datadoghq.com/infrastructure">Infrastrucure</a>ページの<strong>clanton</strong>の行の右端にmyappという青いラベルが増えていることが確認できたら、ダブルクリックしmyappの名前スペースのメトリックスを表示するページに移動します。</p>
-
-<p>今は、myappの名前スペースに１種類のメトリックスしかないので、次のようなグラフが表示されれば、動作確認は完了です。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-myapp-testsleep.png" width="800" height="800" title="&lsquo;datadog myapp testsleep&rsquo; &lsquo;datadog myapp testsleep&rsquo;" ></p>
-
-<h2>まとめ</h2>
-
-<p>ここまでで前編は終わりです。内容が理解できれば30分以内でできてしまうインストール作業ではないかと思います。こんな簡単な作業で、GPIOで集めた情報も可視化できるなんて素晴しいと思いませんか。後半では、GalileoのGPIO関連ライブラリーと任意のメトリックスの取り扱いに関して書いていこうと思います。</p>
-
-<ul>
-<li>2014/04/18 ntpdate、及びntpの設定に関連する記述を変更しました。</li>
-</ul>
-
 ]]></content>
   </entry>
   

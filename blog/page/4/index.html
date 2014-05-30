@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がしてならない。しかしながら、僕が2013 Pycon APACの時に使った写真主体のDatadogスライドには、定期的に閲覧が発生している。 &hellip;">
+  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(後編)Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし &hellip;">
   
 
-  <meta name="description" content="世界では着実に知名度を上げてきているDatadogのモニターリング・サービスなのだが、日本語の情報がまだまだ少ないせいか、国内での盛り上がりに欠ける気がしてならない。しかしながら、僕が2013 Pycon APACの時に使った写真主体のDatadogスライドには、定期的に閲覧が発生している。 &hellip;">
+  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(後編)Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,179 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-11T15:44:00+09:00" pubdate data-updated="true">Apr 11<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
+
+<p>Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
+
+<p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
+
+<h2>Datadog Agentのインストール</h2>
+
+<p>DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行しインストールの有無を確認し、必要に応じてsysstatインストールしておくことにします。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
+
+<p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
+
+<p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+</span><span class='line'>                                 Dload  Upload   Total   Spent    Left  Speed
+</span><span class='line'>100   184  100   184    0     0    309      0 --:--:-- --:--:-- --:--:--   859
+</span><span class='line'>100 17616  100 17616    0     0  19108      0 --:--:-- --:--:-- --:--:-- 19108
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Installing Datadog Agent 4.2.1
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>Creating Agent directory /root/.datadog-agent..... Done
+</span><span class='line'>Creating log file /root/.datadog-agent/ddagent-install.log.....Done
+</span><span class='line'>Setting up virtual environment.....Done
+</span><span class='line'>Setting up setuptools and pip.....Done
+</span><span class='line'>Installing tornado 2.4.1 using pip.....Done
+</span><span class='line'>Downloading the latest version of the Agent from github (~2.5 MB).....Done
+</span><span class='line'>Uncompressing the archive.....Done
+</span><span class='line'>Configuring datadog.conf file......Done
+</span><span class='line'>Setting up launching scripts.....Done
+</span><span class='line'>Setting up supervisor.....Done
+</span><span class='line'>Consolidating logging.....Done
+</span><span class='line'>Cleaning up the installation directory.....Done
+</span><span class='line'>Starting the Agent.....Done
+</span><span class='line'>
+</span><span class='line'>    Your Agent has started up for the first time. We're currently verifying
+</span><span class='line'>    that data is being submitted. You should see your Agent show up in Datadog
+</span><span class='line'>    shortly at:
+</span><span class='line'>
+</span><span class='line'>        https://app.datadoghq.com/infrastructure
+</span><span class='line'>
+</span><span class='line'>Waiting for metrics.................................
+</span><span class='line'>
+</span><span class='line'>    Success! Your Agent is functioning properly, and will continue to run
+</span><span class='line'>    in the foreground. To stop it, simply press CTRL-C. To start it back
+</span><span class='line'>    up again in the foreground, run:
+</span><span class='line'>
+</span><span class='line'>    cd /root/.datadog-agent
+</span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
+
+
+<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎの写真みたいなグラフをDatadogのダッシュボードで見ることができます。</p>
+
+<p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="datadog dash & raspi" alt="datadog dash & raspi"></p>
+
+<p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
+
+<p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
+
+<h5>追記 2014/04/15:</h5>
+
+<p>僕の環境では、次のDatadog-agentのコマンドオプションを実行したところ、tornado.httpserverのimportエラーが出ました。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo su
+</span><span class='line'># cd /root/.datadog-agent/bin
+</span><span class='line'># ./agent info</span></code></pre></td></tr></table></div></figure>
+
+
+<p>途中のメッセージは飛ばし、エラー部分だけを表示します。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Traceback (most recent call last):
+</span><span class='line'>  File "agent/ddagent.py", line 32, in &lt;module&gt;
+</span><span class='line'>    import tornado.httpserver
+</span><span class='line'>ImportError: No module named tornado.httpserver
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次のコマンドのようにtornadoをpipでインストールすることで、先のエラーは解決しました。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># pip install tornado</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -256,68 +429,9 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/11/13/lean-ux-seminar/">Lean UX 入門セミナーへ参加しました。</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-11-13T19:00:00+09:00" pubdate data-updated="true">Nov 13<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>基本情報:</h3>
-
-<ul>
-<li><a href="http://connpass.com/event/3964/">Lean UX 入門セミナー</a></li>
-</ul>
-
-
-<h3>関連情報:</h3>
-
-<ul>
-<li><a href="http://www.amazon.co.jp/dp/B0074KA0A4">Lean UX: Applying Lean Principles to Improve User Experience</a></li>
-<li><a href="http://www.amazon.co.jp/dp/B00F3UTIQY">リーン・スタートアップ</a></li>
-<li><a href="http://www.amazon.co.jp/dp/4873115914">Running Lean</a></li>
-<li><a href="http://www.amazon.co.jp/dp/4798117552">アントレプレナーの教科書</a></li>
-<li><a href="http://www.amazon.co.jp/dp/4798122971">ビジネスモデル・ジェネレーション ビジネスモデル設計書</a></li>
-<li><a href="http://www.jeffgothelf.com/blog/">Jeff Gothelf Blog</a></li>
-</ul>
-
-
-<h2>感想:</h2>
-
-<ul>
-<li>Leanが課題解決型の手法であるために、Lean UXも課題解決型のインクリメンタルな開発に向いていると感じた。この逆に、いずれゲームチェンジャーと認められるようなUXの革命を目指すなら、別の手法の選択もありと感じた。</li>
-<li>Leanの手法はイテレーションを前提としているため、外注を巻き込んでのプロジェクトの場合は、その初期の役割再確認や利害関係の再設計を念頭に置いた”場（こたつ）”づくりが、日本では特に重要と感じた。</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/5/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -330,6 +444,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a>
@@ -365,10 +483,6 @@
     
       <li class="post">
         <a href="/blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a>
       </li>
     
   </ul>

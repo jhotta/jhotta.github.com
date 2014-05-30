@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="Datadog agent(以後DD-agent)が、Raspberry Piであっさり動いてしまったので、流行のIntel Galileo(以降Galileo)でもあっさり動くのではと思い挑戦してみました。結果から言うと「問題なく出来ます」、しかし、Raspberry Pi(Rasbian) &hellip;">
+  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
   
 
-  <meta name="description" content="Datadog agent(以後DD-agent)が、Raspberry Piであっさり動いてしまったので、流行のIntel Galileo(以降Galileo)でもあっさり動くのではと思い挑戦してみました。結果から言うと「問題なく出来ます」、しかし、Raspberry Pi(Rasbian) &hellip;">
+  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,89 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-24T16:53:00+09:00" pubdate data-updated="true">Apr 24<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。</p>
+
+<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを実装したメトリクス集積サーバ(a metrics aggregation server)です。DogStatsDは、DD-agentに同胞されているので、既にDD-agentが動作していればすぐに使うことができます。(但し、Intel Galileoのようにデーモンを手動で起動するケースは、dogstatsdを起動している必要があります。)</p>
+
+<p><em>StatsD及びStatsDプロトコルは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアとプロトコルです。</em></p>
+
+<p><img class="center" src="/images/blog-images/dogstatsd.png" width="800" height="800" title="DogStatsD" alt="DogStatsD"></p>
+
+<p>DogStatsDは、アプリケーションからUDPで受け取ったメトリックスを一旦ホスト内で蓄積します。その後一定時間ことに、DatadogのサイトにHTTPSで送信します。Datagogのサイトでは、DogStatsDから受けとったメトリックスも名前スペースとタグ付によって管理され、他のメトリックスと同様にグラフ化することができるようになっています。</p>
+
+<p>DogStatsDとの通信がなぜUDPかというという事に関しては、「この間の通信の障害や遅延によってアプリケーションの動作をストールさせないため」と書いてありました。</p>
+
+<h3>DogStatsDのラッパーライブラリーについて</h3>
+
+<p>DogStatsDへのメトリックス送信手続きを簡素化するために、一般的な言語向けにラッパーライブラリーが提供されています。これらのラッパーライブラリーを活用すると数行のコード追加で任意メトリックスをDogStatsDに転送することができます。</p>
+
+<p>以下に代表的なライブラリーを紹介しておきます。</p>
+
+<h4>Datadogによって提供されているライブラリー</h4>
+
+<p><strong>Python: </strong>
+<a href="https://github.com/DataDog/dogstatsd-python">dogstatsd-python</a> &ndash; Python DogStatsD client.</p>
+
+<p><strong>Ruby: </strong>
+<a href="https://github.com/DataDog/dogstatsd-ruby">dogstatsd-ruby</a> &ndash; Ruby DogStatsD client.</p>
+
+<p><strong>PHP: </strong>
+<a href="https://github.com/DataDog/php-datadogstatsd">php-datadogstatsd</a> &ndash; PHP DogStatsD client.</p>
+
+<p><strong>C#: </strong>
+<a href="https://github.com/DataDog/dogstatsd-csharp-client">dogstatsd-csharp-client</a> &ndash; C# DogStatsD client.</p>
+
+<h4>コミュニティーによって提供されいるライブラリー</h4>
+
+<p><strong>Java: </strong>
+<a href="https://github.com/indeedeng/java-dogstatsd-client">java-dogstatsd-client</a> &ndash; DogStatsD Client for Java, <a href="https://github.com/indeedeng">Indeed</a>提供.</p>
+
+<p><strong>Node.js: </strong>
+<a href="https://github.com/joybro/node-dogstatsd">node-dogstatsd</a> &ndash; Node.js DogStatsD client, <a href="https://github.com/joybro">Young Han Lee</a>提供.</p>
+
+<p><strong>Perl: </strong>
+<a href="https://github.com/zipkid/dogstatsd-perl">dogstatsd-perl</a> &ndash; Perl DogStatsD client, <a href="https://github.com/zipkid">Stefan Goethals</a>提供.</p>
+
+<p><strong>Ruby: </strong>
+<a href="https://github.com/mavenlink/metriks-dogstatsd">metricks-dogstatsd</a> &ndash; backend for the popular Metriks gem, <a href="https://github.com/mavenlink">Mavenlink</a>提供.</p>
+
+<p><strong>Go: </strong>
+<a href="https://github.com/ooyala/go-dogstatsd/">go-dogstatsd</a> &ndash; dogstatsd client written in Go, <a href="https://github.com/ooyala">Ooyala</a>提供.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -502,179 +585,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-11T15:44:00+09:00" pubdate data-updated="true">Apr 11<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
-
-<p>Raspberry PiではRasbianを起動している。これって所詮Linuxじゃんなんて思い妄想トランスに入ると、Datadog Agent(以後DD-agent)が動けば、GPIOの入力を簡単に可視化できるし、その情報を基に色々遊べるかな〜と思ったもした。</p>
-
-<p>ということでDD-agentのインストール手順まとめておくことにする。インストールが終わった後(次回以降)は、python周りのライブライリーを使って、Raspberry Pi上のGPIO入出力データをDatadogに送ってみることにする。</p>
-
-<h2>Datadog Agentのインストール</h2>
-
-<p>DD-agentをインストールするためには、sysstatが必要です。確認の意味でもパッケージ管理コマンドを実行しインストールの有無を確認し、必要に応じてsysstatインストールしておくことにします。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install sysstat</span></code></pre></td></tr></table></div></figure>
-
-
-<p>次に、Datadogのアカウントを取得し、Datadogのダッシュボードにログインします。ダッシュボードが表示できたところで、<code>Integrations</code>へカーソルを合わせるとプルダウンメニューが現れるので、<code>Agent</code>を選択する。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-source.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
-
-<p>左側にあるメニューの一番下の<code>From Source</code>を選択すると次のような画面が表示されるでの、赤く囲った部分の一行コマンドをコピーする。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-source-install.png" width="800" height="800" title="datadog agent from source" alt="datadog agent from source"></p>
-
-<p>このコマンドを、Raspberry Piのコンソール画面からroot権限で実行すると、次のような出力が表示されDD-agentが実行中の状態になる。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-</span><span class='line'>                                 Dload  Upload   Total   Spent    Left  Speed
-</span><span class='line'>100   184  100   184    0     0    309      0 --:--:-- --:--:-- --:--:--   859
-</span><span class='line'>100 17616  100 17616    0     0  19108      0 --:--:-- --:--:-- --:--:-- 19108
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>Installing Datadog Agent 4.2.1
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>Creating Agent directory /root/.datadog-agent..... Done
-</span><span class='line'>Creating log file /root/.datadog-agent/ddagent-install.log.....Done
-</span><span class='line'>Setting up virtual environment.....Done
-</span><span class='line'>Setting up setuptools and pip.....Done
-</span><span class='line'>Installing tornado 2.4.1 using pip.....Done
-</span><span class='line'>Downloading the latest version of the Agent from github (~2.5 MB).....Done
-</span><span class='line'>Uncompressing the archive.....Done
-</span><span class='line'>Configuring datadog.conf file......Done
-</span><span class='line'>Setting up launching scripts.....Done
-</span><span class='line'>Setting up supervisor.....Done
-</span><span class='line'>Consolidating logging.....Done
-</span><span class='line'>Cleaning up the installation directory.....Done
-</span><span class='line'>Starting the Agent.....Done
-</span><span class='line'>
-</span><span class='line'>    Your Agent has started up for the first time. We're currently verifying
-</span><span class='line'>    that data is being submitted. You should see your Agent show up in Datadog
-</span><span class='line'>    shortly at:
-</span><span class='line'>
-</span><span class='line'>        https://app.datadoghq.com/infrastructure
-</span><span class='line'>
-</span><span class='line'>Waiting for metrics.................................
-</span><span class='line'>
-</span><span class='line'>    Success! Your Agent is functioning properly, and will continue to run
-</span><span class='line'>    in the foreground. To stop it, simply press CTRL-C. To start it back
-</span><span class='line'>    up again in the foreground, run:
-</span><span class='line'>
-</span><span class='line'>    cd /root/.datadog-agent
-</span><span class='line'>    sh bin/agent</span></code></pre></td></tr></table></div></figure>
-
-
-<p>しばらくして、Datadogのダッシュボードの<code>Infrastructure</code>タブ &ndash;> <code>raspiのホスト名</code>をクリックすると次ぎの写真みたいなグラフをDatadogのダッシュボードで見ることができます。</p>
-
-<p><img class="center" src="/images/blog-images/dd-raspi.jpg" width="800" height="800" title="datadog dash & raspi" alt="datadog dash & raspi"></p>
-
-<p>ここまででDD-agent自体のインストールは終了です。しかしながら、毎回コンソール画面から起動コマンドを入力するのも面倒なので、次回のポストで/etc/init.d以下に設置する起動スクリプトについて書きたいと思います。</p>
-
-<p><a href="../../../../../blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></p>
-
-<h5>追記 2014/04/15:</h5>
-
-<p>僕の環境では、次のDatadog-agentのコマンドオプションを実行したところ、tornado.httpserverのimportエラーが出ました。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>$ sudo su
-</span><span class='line'># cd /root/.datadog-agent/bin
-</span><span class='line'># ./agent info</span></code></pre></td></tr></table></div></figure>
-
-
-<p>途中のメッセージは飛ばし、エラー部分だけを表示します。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Traceback (most recent call last):
-</span><span class='line'>  File "agent/ddagent.py", line 32, in &lt;module&gt;
-</span><span class='line'>    import tornado.httpserver
-</span><span class='line'>ImportError: No module named tornado.httpserver
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>次のコマンドのようにtornadoをpipでインストールすることで、先のエラーは解決しました。</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># pip install tornado</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -690,6 +600,10 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a>
@@ -725,10 +639,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     
       <li class="post">
         <a href="/blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/08/install-datadog-agent/">Datadogでサービスモニターリング [Agentのインストール]</a>
       </li>
     
   </ul>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: raspberry pi | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/raspberry-pi/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-05-28T15:59:46+09:00</updated>
+  <updated>2014-05-30T21:57:30+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,341 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)]]></title>
+    <link href="http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2/"/>
+    <updated>2014-05-29T19:58:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/05/29/consider-python-extention-gpio-usage-2</id>
+    <content type="html"><![CDATA[<h2>C言語を使ってPython拡張についてもう少し…</h2>
+
+<p>今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)</p>
+
+<pre><code>1. C言語でのアプリケーション開発。
+2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp; setup.pyの追加。
+3. コンパイルとテスト。
+</code></pre>
+
+<p>第1,第3ステップは、一般的な開発と大差がないので今回のスコープ外ということにし第2ステップに注目して解説を進めていくことにします。</p>
+
+<p>尚、Raspberry Piの場合は、ビルド環境も簡単にインストールできるので実機でビルドしながら開発を進めるという方法をとるのがいいと思います。C言語のソースのサイズにもよると思いますが、今回のようにセンサーを初期化する関数と計測した値を読み込む関数の2つ程度ならビルド時間も許容できるのではないかと思います。</p>
+
+<p>(実開発はしないので、次の開発環境準備部分は読み飛ばしても大丈夫です。)</p>
+
+<p>まずは、<code>apt-get</code>コマンドで、gcc及び一般的な開発環境をインストールします。</p>
+
+<p><code>bash
+sudo apt-get install pyhon-dev build-essential
+</code></p>
+
+<p>次に、GPIOを制御しているBCM2835のheaderファイルもインストールします。
+インストール方法に関しては、<a href="http://www.airspayce.com/mikem/bcm2835/">C library for Broadcom BCM 2835 as used in Raspberry Pi</a>のドキュメントを参考に<a href="http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz">cm2835-1.36.tar.gz</a>をDLし、次のようにビルド&amp;インストールします。</p>
+
+<p><code>bash
+tar zxvf bcm2835-1.xx.tar.gz
+cd bcm2835-1.xx
+./configure
+make
+sudo make check
+sudo make install
+</code></p>
+
+<p>尚、bcm2835のheaderファイルで使われている各モジュールの詳細は<a href="http://www.airspayce.com/mikem/bcm2835/modules.html">http://www.airspayce.com/mikem/bcm2835/modules.html</a>を参照してください。(大元の資料が一番ですよね…)</p>
+
+<p>ここれで、Raspberry Pi上でのPython拡張モジュールの開発の準備は完了です。</p>
+
+<h2>C言語ソースへのラッピンコード追記</h2>
+
+<p>C言語のコードを拡張していくには次の4項目を書き足すことになります。</p>
+
+<pre><code>1. Python用のheaderファイル宣言　(#include &lt;Python.h&gt;)
+2. モジュールに含む関数へのPythonラッパー　(static PyObject * モジュール名_関数名()の部分)
+3. モジュール内の関数のリスト (static PyMethodDef モジュール名Methods[]の部分)
+4. モジュールをイニシャライズする関数　(void initModule()の部分)
+</code></pre>
+
+<p>前回のポストで紹介したadafruitが提供してくれているリポジトリの中のAdafruit_DHT_Driver_Pythonディレクトリにある、dhtreader.cというファイルを項目に従って見ていくことにします。</p>
+
+<h3>1. Python用のheaderファイル宣言</h3>
+
+<p>29行目で、ヘッダーファイルの宣言をしていますね。
+<code>
+29 #include &lt;Python.h&gt;
+</code></p>
+
+<h3>2. モジュールに含む関数へのPythonラッパー</h3>
+
+<p>128~132行目にかけてPython環境からC言語のbcm2835に初期化のできるようPythonのラッパーを書いていますね。</p>
+
+<p>ここでPyObjectを定義し、モジュール名と関数名を”_”(アンダースコア)で繋げて書くことで、当該モジュールをインポートした時にPython Scriptからdhtreader.init()みたいな方法で実行できるようにしています。</p>
+
+<p><code>
+static PyObject * [モジュール名]_[関数名](PyObject *self, PyObject *args)
+</code></p>
+
+<p>Pythoラッパーの一般的な役割は、Pythonの値を受け取ってCの値に変換し、Cの適切ば関数を実行することです。そして、Cの関数が実行された後でCの値をPythonの値に戻してあげることです。</p>
+
+<p>CからPythonには、Py_BuildValue()を使って、単体値かタプル形式のPythonオブジェクトを戻すことができます。</p>
+
+<p><code>c
+128 static PyObject *
+129 dhtreader_init(PyObject *self, PyObject *args)
+130 {
+131     return Py_BuildValue("i", bcm2835_init());
+132 }
+</code></p>
+
+<p>Py_BuildValue()では、第1引数の文字のフォーマットに合わせて、第2引数の値をオブジェクトに変換します。</p>
+
+<p>フォーマット文字は、次の表の仕様になっています。</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> [フォーマット文字]　　 </th>
+<th> [Pythonタイプ]　　　　　　 </th>
+<th> [C/C++ タイプ] </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> s, s#              </td>
+<td> str/unicode, len()      </td>
+<td> char*(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> z, z#              </td>
+<td> str/unicode/None, len() </td>
+<td> char*/NULL(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> u, u#              </td>
+<td> unicode, len()          </td>
+<td> (Py_UNICODE*, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> i                  </td>
+<td> int                     </td>
+<td> int</td>
+</tr>
+<tr>
+<td></td>
+<td> b                  </td>
+<td> int                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> h                  </td>
+<td> int                     </td>
+<td> short</td>
+</tr>
+<tr>
+<td></td>
+<td> l                  </td>
+<td> int                     </td>
+<td> long</td>
+</tr>
+<tr>
+<td></td>
+<td> k                  </td>
+<td> int or long             </td>
+<td> unsigned long</td>
+</tr>
+<tr>
+<td></td>
+<td> I                  </td>
+<td> int or long             </td>
+<td> unsigned int</td>
+</tr>
+<tr>
+<td></td>
+<td> B                  </td>
+<td> int                     </td>
+<td> unsigned char</td>
+</tr>
+<tr>
+<td></td>
+<td> H                  </td>
+<td> int                     </td>
+<td> unsigned short</td>
+</tr>
+<tr>
+<td></td>
+<td> L                  </td>
+<td> long                    </td>
+<td> long long</td>
+</tr>
+<tr>
+<td></td>
+<td> K                  </td>
+<td> long                    </td>
+<td> unsigned long long</td>
+</tr>
+<tr>
+<td></td>
+<td> c                  </td>
+<td> str                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> d                  </td>
+<td> float                   </td>
+<td> double</td>
+</tr>
+<tr>
+<td></td>
+<td> f                  </td>
+<td> float                   </td>
+<td> float</td>
+</tr>
+<tr>
+<td></td>
+<td> D                  </td>
+<td> complex                 </td>
+<td> Py_Complex*</td>
+</tr>
+<tr>
+<td></td>
+<td> O                  </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> S                  </td>
+<td> str                     </td>
+<td> PyStringObject</td>
+</tr>
+<tr>
+<td></td>
+<td> Nb                 </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> O&amp;                 </td>
+<td> (any)                   </td>
+<td> (any)</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>先のPy_BuildValue()例では、<code>bcm2835_init()</code>の結果がint値になるので、<code>i</code>を指定してPythonオブジェクトに戻しています。</p>
+
+<p>さて、次のブロックでは、Pythonから受け取った値をCで使える値に変換している部分に注目します。</p>
+
+<p><code>c
+134 static PyObject *
+135 dhtreader_read(PyObject *self, PyObject *args)
+136 {
+137     int type, dhtpin;
+138
+139    if (!PyArg_ParseTuple(args, "ii", &amp;type, &amp;dhtpin))
+140        return NULL;
+141
+142    float t, h;
+143    int re = readDHT(type, dhtpin, &amp;t, &amp;h);
+144
+145    if (re == 0) {
+146        return Py_BuildValue("(d,d)", t, h);
+147    } else if (re == -1) {
+148 #ifdef DEBUG
+149        printf("sensor read failed! not enough data received\n");
+150 #endif
+151    } else if (re == -2) {
+152 #ifdef DEBUG
+153        printf("sensor read failed! checksum failed!\n");
+154 #endif
+156    }
+157
+158    return Py_BuildValue("");
+159 }
+</code></p>
+
+<p>139行目の<code>PyArg_ParseTuple()</code>とある部分がPythonから渡ってきた値をCの値に置き換えています。この関数でフォーマット文字の列をつかって渡ってくる値を形式を指定し変換します。</p>
+
+<p>計測には、C言語で書かれたソースの前半(31~91行)で指定している<code>readDHT()</code>関数を使い、結果は<code>Py_BuildValue()</code>で、floatの数値をタプルとしてPythonオブジェクにしているのが分かりますね。</p>
+
+<p>それ以外のDEBUG用のコードは、<code>readDHT()</code>の戻り値によって、プリントディバッグできるようになっているのでしょうね…。</p>
+
+<h3>3. モジュール内の関数のリスト</h3>
+
+<p>次の部分の<code>static PyMethodDef DHTReaderMethods[]</code>ではモジュールをimportした後に、PythonインタプリターがそれぞれのメソッドとCの関数との対応表を提供しています。</p>
+
+<p><code>DHTReaderMethods</code>は、関数リストを定義するための関数の名前です。モジュール名に<code>Methods</code>を続けて書きます。この名前は、次の初期化のブロックでインタープリタに伝える関数リストの指定しに使います。</p>
+
+<p><code>c
+161 static PyMethodDef DHTReaderMethods[] = {
+162    {"init", dhtreader_init, METH_VARARGS,
+163     "initialize dht reader"},
+164    {"read", dhtreader_read, METH_VARARGS,
+165     "temperature and humidity from sensor"},
+166    {NULL, NULL, 0, NULL}        /* Sentinel */
+167 };
+</code></p>
+
+<p>内容は、次の通りです。</p>
+
+<p><code>
+{"[Pythonメソッド名]", [Cコード内の関数名], [Pythonから渡す引数の形式指定], "[解説]"}
+</code></p>
+
+<p>尚、[Pythonから渡す引数の形式指定]の指定には、<code>METH_VARARGS</code>と<code>METH_KEYWARD</code>があります。(<code>METH_KEYWARD</code>については、<code>PyArg_ParseTupleKeywards()</code>とのセットで指定するは分かっているのですが詳細な用法が…。）</p>
+
+<p>169行の<code>NULL</code>のは、リストの終わりを示す記号になります。</p>
+
+<p><code>
+{NULL, NULL, 0, NULL}
+</code></p>
+
+<h3>4. モジュールをイニシャライズする関数</h3>
+
+<p>最後の部分は、モジュールがインポートされた時にPythonインタープリタによって実行される関数です。</p>
+
+<p><code>c
+169 PyMODINIT_FUNC
+170 initdhtreader(void)
+171 {
+172    PyObject *m;
+173
+174    m = Py_InitModule("dhtreader", DHTReaderMethods);
+175    if (m == NULL)
+176        return;
+177 }
+</code></p>
+
+<p><code>
+Py_InitModule("[モジュール名]", [モジュール内の関数を指定したC内の関数])
+</code></p>
+
+<p>以上で、dhtreader.c内のコードでpython拡張に関わる部分はの解説は全てです。</p>
+
+<p>試しに取得しているレポジトリーのAdafruit_DHT_Driver_Pythonディレクトリで、次のコマンドを実行すると拡張モジュールがビルドされているはずです。~/Adafruit-Raspberry-Pi-Python-Code/Adafruit_DHT_Driver_Python/build/lib.linux-armv6l-2.7以下を見てみてください。(自分で書いているわけではないので、できるに決まってますよね〜)</p>
+
+<p><code>bash
+python setup.py build
+</code></p>
+
+<h3>感想:</h3>
+
+<p>調べてみて感じたことは、「CソースからPython拡張モジュールにするための追記自体はそれほど複雑ではない」ということです。僕にとっては、むしろ元のCソースの処理を理解し、通信の方式やバイナリをCでハンドリングする部分を理解するのに頭を使ったような気がします。</p>
+
+<p>今後モノのインターネットが進むと、Pythonでのプロトタイピングなんてケースが多々出てくると思います。Cとの兼ね合いでちょっと困ったという時には、この手法は十分使えるのではないでしょうか。<a href="http://docs.python.jp/2/extending/extending.html">Python本家のドキュメント</a>を一読しておくと、いざという時に慌てなくすむかもしれませんね。</p>
+
+<h2>みちくさ:</h2>
+
+<p>僕は、未だ試していませんが、<a href="https://github.com/mubeta06/py-libbcm2835">py-libbcm2835</a>というCtypesのバインディングもあるようです。そちらも合わせて参考にしてみてください。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[温度センサーDHT11をRaspberry piで使う(始まり)]]></title>
@@ -47,7 +382,7 @@ pin = 24</p>
 print dhtreader.read(type, pin)
 ```</p>
 
-<p>ワークショップでは、「C言語で書かれたプログラムをosライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
+<p>ワークショップでは、「C言語で書かれたプログラムをsys,osライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
 
 <p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
 
