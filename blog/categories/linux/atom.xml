@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-06-10T18:37:13+09:00</updated>
+  <updated>2014-06-10T18:46:11+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -18,7 +18,7 @@
     <link href="http://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/"/>
     <updated>2014-06-10T10:50:00+09:00</updated>
     <id>http://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog</id>
-    <content type="html"><![CDATA[<p>「今日は、<a href="http://www.dockercon.com/">dockercon14</a>が、サンフランシスコで開催されているな〜」と思っていたら、Datadog blogからもDocker関連の面白い記事が掲載されました。</p>
+    <content type="html"><![CDATA[<p>「今日は、<a href="http://www.dockercon.com/">dockercon14</a>がサンフランシスコで開催されているな〜」と思っていたら、Datadog blogからもDocker関連の面白い記事が掲載されました。</p>
 
 <p>Datadog agent 4.3.1をDockerホストOS上で起動し、他のアプリと同じようにIntegration用のYAMLファイルを設定することでDcoker内の各コンテナの状態をモニターリングできるということです。</p>
 
@@ -34,7 +34,7 @@
 
 <p>Like virtual machines before them, containers require a new monitoring approach. Luckily, if you are a Datadog user, you can now take advantage of our newest integration: Docker.</p>
 
-<p>従前の仮想マシンと同様に、Linuxコンテナでも新しい監視アプローチが必要になります。Datadogユーザーであれば幸いなことに、最新のDocker Integrationの恩恵を受けることができます。</p>
+<p>従前の仮想マシンと同様に、Linuxコンテナでも新しい監視アプローチが必要にまります。Datadogユーザーであれば幸いなことに、最新のDocker Integrationの恩恵を受けることができます。</p>
 
 <p>With our Docker integration you can monitor containers by running version 4.3.1 of the Datadog agent. The integration configuration is, like all other agent-based integrations, a simple YAML file.</p>
 
