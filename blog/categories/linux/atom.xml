@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-06-10T18:46:11+09:00</updated>
+  <updated>2014-06-10T19:02:22+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -23,6 +23,15 @@
 <p>Datadog agent 4.3.1をDockerホストOS上で起動し、他のアプリと同じようにIntegration用のYAMLファイルを設定することでDcoker内の各コンテナの状態をモニターリングできるということです。</p>
 
 <p><a href="https://www.datadoghq.com">Datadog</a>の<a href="https://twitter.com/alq">@alq</a>が「もちろん翻訳してもいいよ〜! (Yes! Of course.)」言ってくれているので、次に日本語で同記事を転載します。</p>
+
+<p>その前に次のシリーズを読んでおくと、Datadogはどうやってメトリックスを集めようしているのかが理解できると思います。</p>
+
+<ul>
+<li><a href="http://gihyo.jp/admin/serial/01/linux_containers/0003">第3回　Linuxカーネルのコンテナ機能［2］ ─cgroupとは？（その1）</a></li>
+<li><a href="http://gihyo.jp/admin/serial/01/linux_containers/0002">第2回　コンテナの仕組みとLinuxカーネルのコンテナ機能［1］名前空間とは？</a></li>
+<li><a href="http://gihyo.jp/admin/serial/01/linux_containers/0001">第1回　LXCとコンテナの基本</a></li>
+</ul>
+
 
 <h2>Monitor Docker with Datadog</h2>
 
