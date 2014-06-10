@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>モニターリングサービスのDatadogを使ってDockerをモニターリング&管理 - Etizolam</title>
+  <meta name="author" content="@jhotta">
+
+  
+  <meta name="description" content="Dockerコンテナのモニタリング&管理に、Datadog agentが対応しました。Datadog agentを使ってどんなことができるか、本家Datadog blogの日本語訳を通して紹介していきます。">
+  <meta name="keywords" content="Datadog, モニターリング, Docker, linuxコンテナ">
+
+  <meta name="description" content="Dockerコンテナのモニタリング&管理に、Datadog agentが対応しました。Datadog agentを使ってどんなことができるか、本家Datadog blogの日本語訳を通して紹介していきます。">
+  <meta name="keywords" content="Datadog, モニターリング, Docker, linuxコンテナ">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-49926669-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Etizolam</a></h1>
+  
+    <h2>For our good night sleep.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jhotta.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">モニターリングサービスのDatadogを使ってDockerをモニターリング&管理</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-10T10:50:00+09:00" pubdate data-updated="true">Jun 10<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>「今日は、<a href="http://www.dockercon.com/">dockercon14</a>が、サンフランシスコで開催されているな〜」と思っていたら、Datadog blogからもDocker関連の面白い記事が掲載されました。</p>
+
+<p>Datadog agent 4.3.1をDockerホストOS上で起動し、他のアプリと同じようにIntegration用のYAMLファイルを設定することでDcoker内の各コンテナの状態をモニターリングできるということです。</p>
+
+<p><a href="https://www.datadoghq.com">Datadog</a>の<a href="https://twitter.com/alq">@alq</a>が「もちろん翻訳してもいいよ〜! (Yes! Of course.)」言ってくれているので、次に日本語で同記事を転載します。</p>
+
+<h2>Monitor Docker with Datadog</h2>
+
+<p><a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">Monitor Docker with Datadog(原文)</a></p>
+
+<p>Docker is an emerging platform to build and deploy software using lightweight, pared-down virtual machines known as containers. By delivering easy-to-provision recipes for developers and bit-for-bit compatibility between environments, Docker is a popular solution to solve continuous delivery in modern infrastructure.</p>
+
+<p><a href="http://www.docker.com/">Docker</a>は、贅肉を削ぎ落とし軽量化したLinuxコンテナとして知られている、仮想マシンを使用しソフトウェアシステムを構築&amp;展開するための新たなプラットフォームです。Dockerは、アプリ開発者に簡単にプロビジョニングできるレシピを提供することと環境間の再現性を上げることで、現代インフラでの継続的デリバリーを実現する最も人気のある方法になりました。</p>
+
+<p>Like virtual machines before them, containers require a new monitoring approach. Luckily, if you are a Datadog user, you can now take advantage of our newest integration: Docker.</p>
+
+<p>従前の仮想マシンと同様に、Linuxコンテナでも新しい監視アプローチが必要になります。Datadogユーザーであれば幸いなことに、最新のDocker Integrationの恩恵を受けることができます。</p>
+
+<p>With our Docker integration you can monitor containers by running version 4.3.1 of the Datadog agent. The integration configuration is, like all other agent-based integrations, a simple YAML file.</p>
+
+<p>バージョン4.3.1の<a href="http://docs.datadoghq.com/guides/basic_agent_usage/">Datadog agent</a>を導入することで、Docker Integrationを使ってコンテナを監視することができるようになります。
+Docker Integrationの設定方法は、今まであった他のアプリケーションのIntegrationと同じように簡単な<a href="https://github.com/DataDog/dd-agent/blob/master/conf.d/docker.yaml.example">YAMLファイル形式</a>になっています。</p>
+
+<h3>How Docker monitoring works</h3>
+
+<p>The simplest way to monitor Docker containers is to run the Datadog Agent on the host, where it can access container statistics. This is especially true if you are deploying Docker on existing, full-fledged Host OSes, along existing applications such as databases.</p>
+
+<p>Dcokerコンテナを監視するための最も簡単な方法は、コンテナのスタティック情報にアクセスできるホスト上でDatadog Agentを実行することです。本格的なホストOSにデータベースなどの既存のアプリケーションと共にDockerを展開するなら、尚更この方法は有効です。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage1.png" width="400" height="400" title="Where the agent fits in a Docker environment" alt="Where the agent fits in a Docker environment"></p>
+
+<p>Since Docker uses existing kernel constructs (namespaces and cgroups) in order to run containers, the Datadog Agent uses the native cgroup accounting metrics to gather CPU, memory, network and I/O metrics of the containers every 15 seconds before they are forwarded to Datadog.</p>
+
+<p>Dockerは、コンテナを実行するために既存のカーネル構成体（名前空間とcgroup）を使用しています。
+Datadog agentは、このカーネル構造体のcgroupか提供するトリックス(指標)を使ってCPU、メモリ、ネットワーク、15秒ごとのコンテナI/Oの情報を収集し、Datadogに転送しています。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage2_Screenboard.png" width="800" height="800" title="A Docker ScreenBoard" alt="A Docker ScreenBoard"></p>
+
+<h3>Monitor many containers efficiently with tags</h3>
+
+<p>With easy-to-use, lightweight containers, you will likely dial up several times more running containers than the number of underlying physical or virtual hosts in your infrastructure. How do you then keep track and monitor them without spending time chasing after every single one of them? With tags.</p>
+
+<p>簡単に使用でき軽量なコンテナを使うと、インフラストラクチャ内にある物理マシンまたは仮想ホストの数の数倍のコンテナを起動することになるでしょう。あなたらな、どのように時間をかけずに追跡し又監視しますか?　タグを使っては、どうでしょう!</p>
+
+<p>Tags are the key to monitoring a lot of containers without additional effort. By default, the agent will monitor your containers and turn the Docker “name”, “image” and “command” attributes into a “tag”.</p>
+
+<p>追加の努力をせずに大量のコンテナを監視するためには、<a href="http://docs.datadoghq.com/guides/metrics/#tags">タグ付け</a>が有効な解決策です。何もしなくてもDatadog agentは、Dockerの「名前」,「イメージ名」,「コマンド」の属性をタグに追加します。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage3_tags.png" width="800" height="800" title="Tags" alt="Tags"></p>
+
+<h3>Graph specific metrics with tags</h3>
+
+<p>In Datadog, you define the metrics shown in dashboards and graphs based on one or many tags. This allows you to track specific metrics for many containers in aggregate. Using tags, you can easily create a graph for a metric drawn from all containers running a given image.</p>
+
+<p>Datadogでは、タグの組み合わせに基づいてダッシュボードやグラフに表示するメトリック(指標)を定義することができます。この複数のタグの組み合わせによって統計的に複数のコンテナの特定のメトリックス(指標)を追跡することができるようになります。又タグを使用すると、同じDockerイメージから起動しているコンテナのメトリックス(指標)を手軽にグラフを描くこともできます。</p>
+
+<p>In the example below, we are showing the amount of CPU consumed, broken down by image.</p>
+
+<p>以下の例では、CPUの消費量をDockerイメージの分類で表示しています。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage4_graph_by_image.png" width="800" height="800" title="Using tags to visualize Docker performance" alt="Using tags to visualize Docker performance"></p>
+
+<h3>Alerts</h3>
+
+<p>Tags are also very useful to define alerts that span clusters of containers. For instance, let us say that you are running a cluster of Redis containers and you want to be alerted when one of the containers is running out of memory.</p>
+
+<p>タグの使用は、コンテナをクラスター化し、そのクラスターにアラートを定義するのに非常に便利です。たとえば、Redisが起動しているコンテナのクラスターを運用中、クラスタ内のどれかのコンテナにメモリの不足が発生した場合に、アラートを受け取るようにしたいとしましょう​​。</p>
+
+<p>Instead of defining one alert per container, you only have to create a multi-alert on the docker.mem.rss metric and Datadog will trigger an alert if any container misbehaves.</p>
+
+<p>各コンテナごとにアラートの定義する代わりに、<code>docker.mem.rss</code>のメトリックス(指標)を基に、<strong>multi-alert</strong>を設定します。Datadogでは、この設定によって任意のコンテナでの誤作動によりアラートを送信することができます。</p>
+
+<p>You can also mix and match tags to express more complex conditions. For instance, you can monitor all Redis containers running the redis2.8 image that run on host alq-docker with a simple tag selection:</p>
+
+<p>又タグは、より複雑な条件を設定するためにタグを組み合わせてマッチングさせることができます。たとえば、簡単なタグ選択により、ホスト名<code>alq-docker</code>上で実行されているDockerイメージ<code>redis2.8</code>のすべてのRedisのコンテナを監視することができます。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage5-multi-alert.png" width="800" height="800" title="Monitoring all containers" alt="Monitoring all containers"></p>
+
+<h3>Monitor your containers’ lifecycles</h3>
+
+<p>Since containers are designed to be as short-lived (or long-lived) as traditional OS processes, it can be very useful to track particular containers throughout their lifecycles.</p>
+
+<p>コンテナは、伝統的なOSのプロセスのように短期間しか存在しないように設計されています。従って、そのライフサイクルを通して状態を追跡することは非常に重要です。</p>
+
+<p>Much like any other meaningful event in your infrastructure, you can search for Docker container create/start/stop/destroy events using the Events Stream. Simply use “sources:docker” as the search filter.</p>
+
+<p>インフラ内の他の重要な出来事のように、Dockerコンテナのcreate/start/stop/destroy イベントは、Datadogのイベントストリームで検索することができます。<a href="https://www.datadoghq.com/2014/05/filter-datadog-events-stream-pinpoint-events-infrastructure/">検索フィルター</a>で<code>sources:docker</code>と入力し検索するだけです。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage6_Events.png" width="800" height="800" title="search filter" alt="search filter"></p>
+
+<p>You can also apply the same search to any TimeBoard to visualize Docker container events in the context of Docker and non-Docker metrics. In the following example, we overlay containers starting and stopping over memory and CPU metrics.</p>
+
+<p>更に、Dockerに関連したメトリックス(指標)とそれ以外のメトリック(指標)の検索結果を同一<strong>TimeBoard</strong>に混在させて表示することができます。次の例では、Dockerコンテナの起動と停止と、ホストマシンのメモリとCPUの消費量を同じ<strong>TimeBoard</strong>で表示しています。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage7_Correlations.png" width="800" height="800" title="Docker metrics & events correlated" alt="Docker metrics & events correlated"></p>
+
+<h3>Explore Docker metrics</h3>
+
+<p>To explore the Docker metrics that are available, you can use the Metrics Explorer in Datadog and type “docker” in the first drop-down.</p>
+
+<p>利用可能なDockerのメトリックス(指標)は、DatadogのMetrics Explorer画面内の最初のドロップダウンメニューで<code>docker</code>と入力することで探索することができます。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage8_metrics.png" width="800" height="800" title="Explore Docker metrics" alt="Explore Docker metrics"></p>
+
+<p>You can find detailed descriptions about all the metrics in Docker’s Runtime Metrics guide.</p>
+
+<p>これらのメトリックスの詳細に関しては、<a href="http://docs.docker.com/articles/runmetrics/">Docker’s Runtime Metrics guide</a>を参照してください。</p>
+
+<p>If you would like to easily visualize and alert on Docker metrics, try out Datadog for free with a 14-day trial. Metrics for the Docker engine, containers and underlying hosts will be immediately available after installing the Datadog agent.</p>
+
+<p>Dockerのメトリックス(指標)を使って可視化や通知をしたい場合は、14日間の<a href="https://app.datadoghq.com/signup">フリートライアル</a>を試してみてください。Datadog agentをインストールした後、直ちにDockerエンジン、コンテナ、ホストマシンのメトリックス(指標)を監視できるようになります。</p>
+
+<p>by <a href="http://www.linkedin.com/in/alexislequoc">ALEXIS LÊ-QUÔC</a> (CTO &amp; co-founder Datadog, Inc)</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">@jhotta</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-10T10:50:00+09:00" pubdate data-updated="true">Jun 10<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/docker/'>Docker</a>, <a class='category' href='/blog/categories/datadog/'>datadog</a>, <a class='category' href='/blog/categories/linux/'>linux</a>, <a class='category' href='/blog/categories/kontena/'>コンテナ</a>, <a class='category' href='/blog/categories/monitaringu/'>モニターリング</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/" title="Previous Post: 温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)">&laquo; 温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/10/monitoring-docker-with-the-datadog/">モニターリングサービスのDatadogを使ってDockerをモニターリング&管理</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/13/compiling-yocto-for-galileo-1/">Yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - @jhotta -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
