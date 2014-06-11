@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="「今日は、dockercon14がサンフランシスコで開催されているな〜」と思っていたら、Datadog blogからもDocker関連の面白い記事が掲載されました。Datadog agent 4.3.1をDockerホストOS上で起動し、 &hellip;">
+  <meta name="description" content="さすがにdcokercon14が開催されているということもあって、Dockerネタで2日連続で記事を掲載してきたか…。ということで、この記事も日本語訳してみることにする。(超訳っぽいところは、寛大な心をもって読んでください。)尚この記事を読む前にDcokerのドキュメントのRuntime &hellip;">
   
 
-  <meta name="description" content="「今日は、dockercon14がサンフランシスコで開催されているな〜」と思っていたら、Datadog blogからもDocker関連の面白い記事が掲載されました。Datadog agent 4.3.1をDockerホストOS上で起動し、 &hellip;">
+  <meta name="description" content="さすがにdcokercon14が開催されているということもあって、Dockerネタで2日連続で記事を掲載してきたか…。ということで、この記事も日本語訳してみることにする。(超訳っぽいところは、寛大な心をもって読んでください。)尚この記事を読む前にDcokerのドキュメントのRuntime &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,140 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-11T11:31:00+09:00" pubdate data-updated="true">Jun 11<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>さすがに<a href="http://www.dockercon.com/">dcokercon14</a>が開催されているということもあって、Dockerネタで2日連続で記事を掲載してきたか…。
+ということで、この記事も日本語訳してみることにする。(超訳っぽいところは、寛大な心をもって読んでください。)</p>
+
+<p>尚この記事を読む前にDcokerのドキュメントの<a href="http://docs.docker.com/reference/run/#runtime-privilege-and-lxc-configuration">Runtime Privilege and LXC Configuration</a>の部分に目を通しておくと良いかもしれない。Datadog agentをインストールするコンテナは、このPrivilege機能を使って他のコンテナの情報にアクセスしていると思う。</p>
+
+<h2>Docker-ize Datadog with agent containers</h2>
+
+<p><a href="https://www.datadoghq.com/2014/06/docker-ize-datadog/">Docker-ize Datadog with agent containers (原文)</a></p>
+
+<p><a href="http://www.docker.com/">Docker</a> is an exciting technology that offers a different approach to building and running applications thanks to a clever combination of linux containers (good for ops) and a git-like approach to packaging software (good for dev) so that your containers have everything they need to run without dependencies.</p>
+
+<p><a href="http://www.docker.com/">Docker</a>は、アプリケーションシステムを構築し運用するための刺激的なテクノロジーです。
+このテクノロジーは、Linuxコンテナとgitのようなソフトウェアパッケージングの巧みな組み合わせのおかげで、他に依存することなくそれ自身で完全に動作することができます。</p>
+
+<p>Many of you who are using Docker are embracing the Docker way and taking a container-only approach. As we release our <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">new Docker integration</a>, we don’t want to force you to break from a container-only strategy because of the traditional Datadog agent architecture. Instead, we’ve also embraced the Docker way and we’re pleased to announce a Docker-ized Datadog agent deployed in a container.</p>
+
+<p>Dockerを採用しているユーザーは、Dockerの一般的な用法(the Docker way)に従い自分たちのアプリケーション用コンテナのみを起動するアプローチ(container-only approach)を採用しているでしょう。
+Datadogが<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Docker用の新しいIntegration</a>をリリースしたのは、旧バージョンのDatadog agentのアーキテクチャの問題で、Datadogユーザーが、<strong>container-only</strong>アプローチを断念してほしくなかったからです。Datadogでは<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Docker用の新しいIntegration</a>にとどまらず、Dockerの一般的な用法(the Docker way)に従い、Datadog agentをインストールしたコンテナも準備しました。</p>
+
+<h3>The Docker philosophy</h3>
+
+<p>First, a brief introduction on how infrastructure is set up with Docker. In Docker, each of your applications is isolated in its own container. The blueprint for a container is its DockerFile which is a set of steps to create the container. These steps build the standard binaries and libraries and install your application’s code and its dependencies such as Python, <a href="http://www.johnmcostaiii.net/2013/installing-redis-on-docker/">Redis</a>, Postgres, etc.</p>
+
+<p>まず、Dockerでどのようにシステムインフラがセットアップされるか簡単に紹介します。
+Dockerでは、各アプリケーションはコンテナごとに隔離されています。
+各コンテナの設計図である<strong>DockerFile</strong>には、コンテナの中身を設定していく手順が記述されています。
+この設定手順には、標準的なバイナリやライブラリをビルドしたり、アプリケーションのコードとそのアプリケーションが依存するPython、<a href="http://www.johnmcostaiii.net/2013/installing-redis-on-docker/">Redis</a>、Postgresなどの依存ファイルをインストールする手順が記述されています。</p>
+
+<p>The Docker engine then creates the actual container to run using namespaces and cgroups. These are two features found in recent versions of the Linux kernel used to isolate system calls and resource usage (CPU, memory, disk I/O, etc.) directly on your server. The end result is multiple containers on the server with each application thinking it is in its own machine by itself, without the overhead associated with fully-virtualized machines.</p>
+
+<p>Dockerエンジンは、名前空間とcgroupsを使用し実行用の実コンテナを準備します。
+最近のLinuxカーネルは、これらの名前空間とcgroupsの機能を使い、システムコールの隔離とホストサーバ上のリソース(CPU, memory, disk I/O, etc.) に対する利用制限を実現しています。結果従来型の仮想化技術のようなパフォーマンス低下の影響をうけることなく、ホストサーバ上の個々コンテナ内のアプリケーションは、個別のマシンを占有し動作しているのと同じ状態になります。</p>
+
+<h3>The traditional Datadog set-up</h3>
+
+<p>Until Docker arrived, applications were built in virtual servers or directly on raw servers. In this case, you <a href="http://docs.datadoghq.com/">install the agent</a> on your server and decide what applications and services you want to monitor in Datadog. If you want to send custom metrics to Datadog, you instrument your application with our Datadog version of StatsD, called <a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>. This set-up is illustrated below.</p>
+
+<p>Dockerが一般化する以前は、アプリケーションは物理サーバか従来型仮想サーバ上に構築されていました。このような場合では、各サーバに<a href="http://docs.datadoghq.com/">Datadog agentをインストールし</a>、監視対象のアプリケーションやサービスを決めていきます。任意のメトリックス(指標)をDatadogに転送したないなら、<a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>(DatadogバージョンのStatsD)を使って、アプリケーションにメトリック(指標)採取用のコードを追記することになります。</p>
+
+<p>Datadog agentの配置は、次のような配置になります。</p>
+
+<p><img class="center" src="/images/blog-images/Traditional-2.png" width="800" height="800" title="Traditional way" alt="Traditional way"></p>
+
+<p>The traditional Datadog set-up in the Docker environment means the Datadog agent runs next to the Docker engine.</p>
+
+<p>Docker環境での伝統的なDatadogのセットアップでは、Datadog agentをDokcerエンジンのとなりで起動していました。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage1.png" width="400" height="400" title="Where the agent fits in a Docker environment" alt="Where the agent fits in a Docker environment"></p>
+
+<h3>Datadog the Docker Way</h3>
+
+<p>Because the Docker philosophy is to isolate applications to a container, we have built a “Docker-ized” installation of the Datadog agent. We have isolated the agent into two kinds of Docker containers. Both of the container installations can be illustrated by the diagram below.</p>
+
+<p>Dockerの哲学がアプリケーションをコンテナに収納しそれぞれを隔離することなので、Datadogでも<strong>“Docker-ized”</strong>(コンテナに収納)したDatadog agentを作ってみました。</p>
+
+<p>下記に示すdd-agent&amp;dogstatsdコンテナ又はdogstatsdコンテナは、次の図のような配置になります。</p>
+
+<p><img class="center" src="/images/blog-images/DockerizeImage2.png" width="600" height="600" title="Docker-ized Datadog" alt="Docker-ized Datadog"></p>
+
+<p>The first container includes the Datadog agent plus DogStatsD. The Datadog agent is responsible for sending us both native host and container-specific metrics, like number of containers, load, memory, disk usage, and latency. DogStatsD will send us custom metrics you have instrumented in containerized applications. Again, you can read more about what exactly Datadog monitors in Docker in our <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">Monitor Docker with Datadog</a> post.</p>
+
+<p>最初に紹介するコンテナには、Datadog agentとDogStatsDがインストールされています。
+このコンテナのDatadog agentは、Dokcerをホストしているサーバとコンテナ固有のメトリック(指標)の両方を送信します。例えば、コンテナ数、負荷、メモリ、ディスク使用量、レーテンシー時間等が含まれます。DogStatsDは、コンテナ内に収めたアプリケーションに設定した任意のメトリックス(指標)を転送します。Datadogが、Dockerに関し収集しているメトリックスの詳細を調べる方法を知りたい場合は、<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Monitor Docker with Datadog</a>の記事を参照してください。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>FROM datadog/docker-dd-agent
+</span><span class='line'>
+</span><span class='line'># Set your API key
+</span><span class='line'>RUN sed -i -e"s/^.*api_key:.*$/api_key: EXAMPLE_API_KEY/" /etc/dd-agent/datadog.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you only want to monitor custom metrics in containerized applications, the other Datadog container isolates DogstatsD so that you can send us custom metrics to monitor.</p>
+
+<p>コンテナ内のアプリケーションの任意のメトリックス(指標)のみを監視したい場合は、DogstatsDを収納した別のDatadogコンテナ(dogstatsdコンテナ)を利用します。
+このコンテナを利用することで、任意のメトリックス(指標)をDatadogに送信することができるようになります。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>FROM datadog/docker-dogstatsd
+</span><span class='line'>
+</span><span class='line'># Set your API key
+</span><span class='line'>RUN sed -i -e"s/^.*api_key:.*$/api_key: EXAMPLE_API_KEY/" /etc/dd-agent/datadog.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For detailed documentation on how to install the Docker-ized Datadog containers, please visit our <a href="https://github.com/DataDog/dd-agent/wiki/Docker-Containers">Docker installation guide</a>.</p>
+
+<p><strong>Docker-ized Datadog</strong>コンテナのインストール方法に関する詳細は、<a href="https://github.com/DataDog/dd-agent/wiki/Docker-Containers">Docker installation guide</a>を参照してください。</p>
+
+<p>As mentioned in the <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">Monitor Docker with Datadog</a> post, if you would like to alert on and visualize Docker metrics, you can sign-up for a <a href="https://app.datadoghq.com/signup">14-day free trial of Datadog</a>. Docker metrics will be available immediately after installing the Datadog agent in its traditional format or as a container.</p>
+
+<p>先の<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Monitor Docker with Datadog</a>の記事でも書いたように、Dockerのメトリックス(指標)を使って状況の可視化や通知をしたい場合は、<a href="https://app.datadoghq.com/signup">14日間のフリートライアル</a>を試してみてください。
+Datadog agentをインストールした後、直ちにDockerエンジン、コンテナ、ホストマシンのメトリックス(指標)を監視できるようになります。</p>
+
+<p>by <a href="https://www.linkedin.com/in/zahedahaidri">ZAHEDA HAIDRI</a> (Datadog, Inc)</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -229,7 +363,7 @@ Datadog agentは、このカーネル構造体のcgroupか提供するトリッ�
 
 <p>If you would like to easily visualize and alert on Docker metrics, try out Datadog for free with a 14-day trial. Metrics for the Docker engine, containers and underlying hosts will be immediately available after installing the Datadog agent.</p>
 
-<p>Dockerのメトリックス(指標)を使って可視化や通知をしたい場合は、14日間の<a href="https://app.datadoghq.com/signup">フリートライアル</a>を試してみてください。Datadog agentをインストールした後、直ちにDockerエンジン、コンテナ、ホストマシンのメトリックス(指標)を監視できるようになります。</p>
+<p>Dockerのメトリックス(指標)を使って状況の可視化や通知をしたい場合は、14日間の<a href="https://app.datadoghq.com/signup">フリートライアル</a>を試してみてください。Datadog agentをインストールした後、直ちにDockerエンジン、コンテナ、ホストマシンのメトリックス(指標)を監視できるようになります。</p>
 
 <p>by <a href="http://www.linkedin.com/in/alexislequoc">ALEXIS LÊ-QUÔC</a> (CTO &amp; co-founder Datadog, Inc)</p>
 </div>
@@ -663,94 +797,6 @@ Datadog agentは、このカーネル構造体のcgroupか提供するトリッ�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-28T12:23:00+09:00" pubdate data-updated="true">May 28<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>始まり:</h2>
-
-<p>先日、<a href="http://www.tokyohackerspace.org/ja">Tokyo HackerSpace(以後THS)</a>で開催された<a href="http://connpass.com/event/6352/">Raspberry Pi Work Shop @ THS #3</a>に参加しました。丁度、GPIOで収集した情報で<a href="http://www.datadoghq.com/">Datadog</a>上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。</p>
-
-<p><img class="center" src="/images/blog-images/ths-1.jpg" width="800" height="800" title="datadog integrations" alt="HackerSpace"></p>
-
-<p>ワークショップは、回路図などの難しい説明はありませんでした。渡された部品と基盤を説明に従ってハンダ付け、Raspberry Piに接続し、動作確認をする、という至ってシンプルな流れでした。ワークショップでの作業時間を考慮すると、「電子工作初心者にはこれくらい簡素化された流れが、作業/理解できる限界」とも思いました。</p>
-
-<p>個人的には、お薦めなWorkshopだと思います。更に、THSには興味深い英語ネーティブが来ていて、英語でのコミュニケーションのひそかな練習場所にも最適な感じがしました。</p>
-
-<p>さて、ワークショップで電子工作した温度&amp;湿度計の中身を見てみると、arduino系の電子工作で頻繁に見かける<a href="https://www.adafruit.com/products/386">DHT11 basic temperature-humidity sensor + extras</a>を使っていました。センサー周りの回路が一体化して、製品とプルアップ抵抗を回路に追加するだけというお手軽さがありがたい製品です。</p>
-
-<p>しかし、Raspberry PiのGPIOに接続したDHT11の通信信号をPythonで読み取ろうとすると処理スピードが間に合わないらしく、DHT11からのデータの読み取りができないようです。なので、DHT系センサーとの通信をPythonから読み取るためのC言語のコードが提供されていることを知りました。</p>
-
-<p><a href="https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code">https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code</a></p>
-
-<p>リポジトリをクローンし、READMEを読んでみると次のようなサンプルコードが書かれていました。</p>
-
-<p>Usage example:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="kn">import</span> <span class="nn">dhtreader</span>
-</span><span class='line'>
-</span><span class='line'><span class="nb">type</span> <span class="o">=</span> <span class="mi">22</span>
-</span><span class='line'><span class="n">pin</span> <span class="o">=</span> <span class="mi">24</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">dhtreader</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
-</span><span class='line'><span class="k">print</span> <span class="n">dhtreader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">pin</span><span class="p">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ワークショップでは、「C言語で書かれたプログラムをsys,osライブラリーか何かでコールしているのかな〜」くらいにしか思っていませんでした。なんと…、普通にPythonで書かれたライブラリーと同じようにインポートして使っているところを見て、C言語で書かれた<a href="http://docs.python.jp/2/extending/extending.html">Python extention</a>を使っていることに気が付きました。</p>
-
-<p>今まで、「Python extentionとかctypeとかって、エキスパートなpythonistaが使いこなすもの」なんて思っていました。しかしハードに関わるプログラムを考える時には、僕みたいな人材でも必要になってくる知識なのだと実感しました。</p>
-
-<h2>Python extentionを調べてみる:</h2>
-
-<p>Python extentionを調べてみると、「Pythonのインタープリターとの間で、Pythonで書かれた他のモジュールと同じ使いように振る舞うことができる、C &amp; C++言語で記述されbuildされた、実行ファイル」らしい。更にPythonは、各プログラミング言語の中でも早い段階でユーザーによる拡張をサポートした言語とも書かれていた。</p>
-
-<p>次のケースでこの拡張性が威力を発揮すると考えられている…。</p>
-
-<pre><code>- Pythonのコア部分にない機能の追加
-- インタープリター言語で書かれているプログラムのボトルネック部分の解決策
-- Proprietary(独占)コードの隠蔽
-</code></pre>
-
-<p>次回は、DHT11に関連して、もう少しPython extensionを掘り下げてみよう。(その前に、Python extention基本について勉強してみます。)</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -764,6 +810,10 @@ Datadog agentは、このカーネル構造体のcgroupか提供するトリッ�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/06/10/monitoring-docker-with-the-datadog/">モニターリングサービスのDatadogを使ってDockerをモニターリング&管理</a>
@@ -799,10 +849,6 @@ Datadog agentは、このカーネル構造体のcgroupか提供するトリッ�
     
       <li class="post">
         <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a>
       </li>
     
   </ul>

@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>コンテナ化したDatadog agentを使ってDockerのモニターリング&管理 - Etizolam</title>
+  <meta name="author" content="@jhotta">
+
+  
+  <meta name="description" content="Dockerコンテナのモニタリング&管理に、Datadog agentが対応しました。Datadog agentを使ってどんなことができるか、本家Datadog blogの日本語訳を通して紹介していきます。">
+  <meta name="keywords" content="Datadog, モニターリング, Docker, linuxコンテナ">
+
+  <meta name="description" content="Dockerコンテナのモニタリング&管理に、Datadog agentが対応しました。Datadog agentを使ってどんなことができるか、本家Datadog blogの日本語訳を通して紹介していきます。">
+  <meta name="keywords" content="Datadog, モニターリング, Docker, linuxコンテナ">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/06/11/docker-ize-datadog-with-agent-containers">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-49926669-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Etizolam</a></h1>
+  
+    <h2>For our good night sleep.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:jhotta.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-11T11:31:00+09:00" pubdate data-updated="true">Jun 11<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>さすがに<a href="http://www.dockercon.com/">dcokercon14</a>が開催されているということもあって、Dockerネタで2日連続で記事を掲載してきたか…。
+ということで、この記事も日本語訳してみることにする。(超訳っぽいところは、寛大な心をもって読んでください。)</p>
+
+<p>尚この記事を読む前にDcokerのドキュメントの<a href="http://docs.docker.com/reference/run/#runtime-privilege-and-lxc-configuration">Runtime Privilege and LXC Configuration</a>の部分に目を通しておくと良いかもしれない。Datadog agentをインストールするコンテナは、このPrivilege機能を使って他のコンテナの情報にアクセスしていると思う。</p>
+
+<h2>Docker-ize Datadog with agent containers</h2>
+
+<p><a href="https://www.datadoghq.com/2014/06/docker-ize-datadog/">Docker-ize Datadog with agent containers (原文)</a></p>
+
+<p><a href="http://www.docker.com/">Docker</a> is an exciting technology that offers a different approach to building and running applications thanks to a clever combination of linux containers (good for ops) and a git-like approach to packaging software (good for dev) so that your containers have everything they need to run without dependencies.</p>
+
+<p><a href="http://www.docker.com/">Docker</a>は、アプリケーションシステムを構築し運用するための刺激的なテクノロジーです。
+このテクノロジーは、Linuxコンテナとgitのようなソフトウェアパッケージングの巧みな組み合わせのおかげで、他に依存することなくそれ自身で完全に動作することができます。</p>
+
+<p>Many of you who are using Docker are embracing the Docker way and taking a container-only approach. As we release our <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">new Docker integration</a>, we don’t want to force you to break from a container-only strategy because of the traditional Datadog agent architecture. Instead, we’ve also embraced the Docker way and we’re pleased to announce a Docker-ized Datadog agent deployed in a container.</p>
+
+<p>Dockerを採用しているユーザーは、Dockerの一般的な用法(the Docker way)に従い自分たちのアプリケーション用コンテナのみを起動するアプローチ(container-only approach)を採用しているでしょう。
+Datadogが<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Docker用の新しいIntegration</a>をリリースしたのは、旧バージョンのDatadog agentのアーキテクチャの問題で、Datadogユーザーが、<strong>container-only</strong>アプローチを断念してほしくなかったからです。Datadogでは<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Docker用の新しいIntegration</a>にとどまらず、Dockerの一般的な用法(the Docker way)に従い、Datadog agentをインストールしたコンテナも準備しました。</p>
+
+<h3>The Docker philosophy</h3>
+
+<p>First, a brief introduction on how infrastructure is set up with Docker. In Docker, each of your applications is isolated in its own container. The blueprint for a container is its DockerFile which is a set of steps to create the container. These steps build the standard binaries and libraries and install your application’s code and its dependencies such as Python, <a href="http://www.johnmcostaiii.net/2013/installing-redis-on-docker/">Redis</a>, Postgres, etc.</p>
+
+<p>まず、Dockerでどのようにシステムインフラがセットアップされるか簡単に紹介します。
+Dockerでは、各アプリケーションはコンテナごとに隔離されています。
+各コンテナの設計図である<strong>DockerFile</strong>には、コンテナの中身を設定していく手順が記述されています。
+この設定手順には、標準的なバイナリやライブラリをビルドしたり、アプリケーションのコードとそのアプリケーションが依存するPython、<a href="http://www.johnmcostaiii.net/2013/installing-redis-on-docker/">Redis</a>、Postgresなどの依存ファイルをインストールする手順が記述されています。</p>
+
+<p>The Docker engine then creates the actual container to run using namespaces and cgroups. These are two features found in recent versions of the Linux kernel used to isolate system calls and resource usage (CPU, memory, disk I/O, etc.) directly on your server. The end result is multiple containers on the server with each application thinking it is in its own machine by itself, without the overhead associated with fully-virtualized machines.</p>
+
+<p>Dockerエンジンは、名前空間とcgroupsを使用し実行用の実コンテナを準備します。
+最近のLinuxカーネルは、これらの名前空間とcgroupsの機能を使い、システムコールの隔離とホストサーバ上のリソース(CPU, memory, disk I/O, etc.) に対する利用制限を実現しています。結果従来型の仮想化技術のようなパフォーマンス低下の影響をうけることなく、ホストサーバ上の個々コンテナ内のアプリケーションは、個別のマシンを占有し動作しているのと同じ状態になります。</p>
+
+<h3>The traditional Datadog set-up</h3>
+
+<p>Until Docker arrived, applications were built in virtual servers or directly on raw servers. In this case, you <a href="http://docs.datadoghq.com/">install the agent</a> on your server and decide what applications and services you want to monitor in Datadog. If you want to send custom metrics to Datadog, you instrument your application with our Datadog version of StatsD, called <a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>. This set-up is illustrated below.</p>
+
+<p>Dockerが一般化する以前は、アプリケーションは物理サーバか従来型仮想サーバ上に構築されていました。このような場合では、各サーバに<a href="http://docs.datadoghq.com/">Datadog agentをインストールし</a>、監視対象のアプリケーションやサービスを決めていきます。任意のメトリックス(指標)をDatadogに転送したないなら、<a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>(DatadogバージョンのStatsD)を使って、アプリケーションにメトリック(指標)採取用のコードを追記することになります。</p>
+
+<p>Datadog agentの配置は、次のような配置になります。</p>
+
+<p><img class="center" src="/images/blog-images/Traditional-2.png" width="800" height="800" title="Traditional way" alt="Traditional way"></p>
+
+<p>The traditional Datadog set-up in the Docker environment means the Datadog agent runs next to the Docker engine.</p>
+
+<p>Docker環境での伝統的なDatadogのセットアップでは、Datadog agentをDokcerエンジンのとなりで起動していました。</p>
+
+<p><img class="center" src="/images/blog-images/DockerImage1.png" width="400" height="400" title="Where the agent fits in a Docker environment" alt="Where the agent fits in a Docker environment"></p>
+
+<h3>Datadog the Docker Way</h3>
+
+<p>Because the Docker philosophy is to isolate applications to a container, we have built a “Docker-ized” installation of the Datadog agent. We have isolated the agent into two kinds of Docker containers. Both of the container installations can be illustrated by the diagram below.</p>
+
+<p>Dockerの哲学がアプリケーションをコンテナに収納しそれぞれを隔離することなので、Datadogでも<strong>“Docker-ized”</strong>(コンテナに収納)したDatadog agentを作ってみました。</p>
+
+<p>下記に示すdd-agent&amp;dogstatsdコンテナ又はdogstatsdコンテナは、次の図のような配置になります。</p>
+
+<p><img class="center" src="/images/blog-images/DockerizeImage2.png" width="600" height="600" title="Docker-ized Datadog" alt="Docker-ized Datadog"></p>
+
+<p>The first container includes the Datadog agent plus DogStatsD. The Datadog agent is responsible for sending us both native host and container-specific metrics, like number of containers, load, memory, disk usage, and latency. DogStatsD will send us custom metrics you have instrumented in containerized applications. Again, you can read more about what exactly Datadog monitors in Docker in our <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">Monitor Docker with Datadog</a> post.</p>
+
+<p>最初に紹介するコンテナには、Datadog agentとDogStatsDがインストールされています。
+このコンテナのDatadog agentは、Dokcerをホストしているサーバとコンテナ固有のメトリック(指標)の両方を送信します。例えば、コンテナ数、負荷、メモリ、ディスク使用量、レーテンシー時間等が含まれます。DogStatsDは、コンテナ内に収めたアプリケーションに設定した任意のメトリックス(指標)を転送します。Datadogが、Dockerに関し収集しているメトリックスの詳細を調べる方法を知りたい場合は、<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Monitor Docker with Datadog</a>の記事を参照してください。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>FROM datadog/docker-dd-agent
+</span><span class='line'>
+</span><span class='line'># Set your API key
+</span><span class='line'>RUN sed -i -e"s/^.*api_key:.*$/api_key: EXAMPLE_API_KEY/" /etc/dd-agent/datadog.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you only want to monitor custom metrics in containerized applications, the other Datadog container isolates DogstatsD so that you can send us custom metrics to monitor.</p>
+
+<p>コンテナ内のアプリケーションの任意のメトリックス(指標)のみを監視したい場合は、DogstatsDを収納した別のDatadogコンテナ(dogstatsdコンテナ)を利用します。
+このコンテナを利用することで、任意のメトリックス(指標)をDatadogに送信することができるようになります。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>FROM datadog/docker-dogstatsd
+</span><span class='line'>
+</span><span class='line'># Set your API key
+</span><span class='line'>RUN sed -i -e"s/^.*api_key:.*$/api_key: EXAMPLE_API_KEY/" /etc/dd-agent/datadog.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>For detailed documentation on how to install the Docker-ized Datadog containers, please visit our <a href="https://github.com/DataDog/dd-agent/wiki/Docker-Containers">Docker installation guide</a>.</p>
+
+<p><strong>Docker-ized Datadog</strong>コンテナのインストール方法に関する詳細は、<a href="https://github.com/DataDog/dd-agent/wiki/Docker-Containers">Docker installation guide</a>を参照してください。</p>
+
+<p>As mentioned in the <a href="https://www.datadoghq.com/2014/06/monitor-docker-datadog/">Monitor Docker with Datadog</a> post, if you would like to alert on and visualize Docker metrics, you can sign-up for a <a href="https://app.datadoghq.com/signup">14-day free trial of Datadog</a>. Docker metrics will be available immediately after installing the Datadog agent in its traditional format or as a container.</p>
+
+<p>先の<a href="https://jhotta.github.io/blog/2014/06/10/monitoring-docker-with-the-datadog/">Monitor Docker with Datadog</a>の記事でも書いたように、Dockerのメトリックス(指標)を使って状況の可視化や通知をしたい場合は、<a href="https://app.datadoghq.com/signup">14日間のフリートライアル</a>を試してみてください。
+Datadog agentをインストールした後、直ちにDockerエンジン、コンテナ、ホストマシンのメトリックス(指標)を監視できるようになります。</p>
+
+<p>by <a href="https://www.linkedin.com/in/zahedahaidri">ZAHEDA HAIDRI</a> (Datadog, Inc)</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">@jhotta</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-11T11:31:00+09:00" pubdate data-updated="true">Jun 11<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/docker/'>Docker</a>, <a class='category' href='/blog/categories/datadog/'>datadog</a>, <a class='category' href='/blog/categories/linux/'>linux</a>, <a class='category' href='/blog/categories/kontena/'>コンテナ</a>, <a class='category' href='/blog/categories/monitaringu/'>モニターリング</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/06/11/docker-ize-datadog-with-agent-containers/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/06/11/docker-ize-datadog-with-agent-containers/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/06/10/monitoring-docker-with-the-datadog/" title="Previous Post: モニターリングサービスのDatadogを使ってDockerをモニターリング&管理">&laquo; モニターリングサービスのDatadogを使ってDockerをモニターリング&管理</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/10/monitoring-docker-with-the-datadog/">モニターリングサービスのDatadogを使ってDockerをモニターリング&管理</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/28/consider-python-extention-fin-gpio-usage-1/">温度センサーDHT11をRaspberry Piで使う(始まり)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/13/compiling-yocto-for-galileo-1/">Yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - @jhotta -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
