@@ -4,7 +4,7 @@
   <title><![CDATA[Etizolam]]></title>
   <link href="http://jhotta.github.io/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-06-11T17:29:21+09:00</updated>
+  <updated>2014-06-14T17:16:30+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -12,6 +12,39 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[DockerHubとlibswarmの提供で、エコシステム基盤の定義?]]></title>
+    <link href="http://jhotta.github.io/blog/2014/06/13/what-i-think-about-libswarm-1/"/>
+    <updated>2014-06-13T13:29:00+09:00</updated>
+    <id>http://jhotta.github.io/blog/2014/06/13/what-i-think-about-libswarm-1</id>
+    <content type="html"><![CDATA[<p><a href="http://www.dockercon.com/">dockercon14</a>が終わって、僕が注目したいのは、<a href="https://hub.docker.com/">DockerHub</a>と<a href="https://github.com/docker/libswarm">Libswarm</a>です。</p>
+
+<p>僕は、LibswarmとDockerHubの関係に関してgitとgithubの関係に似ているような気がしてます。<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">[速報]Docker Hub発表。ビルド、テスト、デプロイの自動化、Dockerイメージの管理など。Dockerのプラットフォーム化を推進(Publickey)</a>にも書かれているように、<strong>&ldquo;実行可能なアプリケーションのDockerイメージを管理する機能などを備えたサービス&rdquo;</strong>なんだとすると、そのDockerイメージをCLIやプログラム内から使い倒すの必要なのがlibswarmではないかと思います。</p>
+
+<p><img class="right" src="http://jhotta.github.io/images/blog-images/Docker_the_road_ahead.png" width="300" height="300" title="Docker the road ahead" alt="Docker the road ahead"></p>
+
+<p>DockerHub&amp;libswarm共に未だ発表されて間もないしので検索してもあまり情報が見つからないのですが、次の幾つかのサイトを見ていると、新しい時代の幕開けが目の前で始まっている感じがし、ワクワクしてしかたがない。</p>
+
+<ul>
+<li><a href="http://www.slideshare.net/shykes/docker-the-road-ahead">Docker: the road ahead</a></li>
+<li><a href="https://www.youtube.com/watch?v=a_YbxWbHgQA">Orchard + libswarm demo from DockerCon</a></li>
+<li><a href="http://www.activestate.com/blog/2014/06/libswarm-docker-orchestration-announced">libswarm &ndash; Docker Orchestration Announced</a></li>
+<li><a href="http://java.dzone.com/articles/libswarm-docker-orchestration?utm_source=feedburner&amp;utm_medium=feed&amp;utm_campaign=Feed%3A+javalobby%2Ffrontpage+%28Javalobby+%2F+Java+Zone%29">libswarm &ndash; Docker Orchestration Announced</a></li>
+</ul>
+
+
+<p>そして<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">Publickeyの記事</a>のまとめで、<strong>&ldquo;ここから見えてくるのは、Docker社のチャレンジは単にLinuxのコンテナ技術を製品化するだけでなく、これまで主にOSベンダーが築いてきたOSを中心とした開発ツールやアプリケーションベンダーとのエコシステムを、コンテナ型仮想化技術を核に再構築しようとしているところです。いまのDockerの勢いを見ていると、このエコシステムの構築とDockerのプラットフォーム化の実現は一定のに説得力があるように思います。&rdquo;</strong>って、非常に意味のある言葉のような気がしています。</p>
+
+<p>githubエコシステムができたことで”コードに対する価値感”や”開発の進め方”が大きく変わったように、<strong>Dockerエコシステム</strong>が形成されていくことで、開発運用の方法が根底から変わっていくのではないかと思います。</p>
+
+<p>そしてクラウドインフラの利用者側として、僕が今感じているのは、「今までのやり方は時代遅れになる、できるところから地道に次の準備を始めるしかない!」ってことかなぁと思う。</p>
+
+<pre><code>- 「時代遅れが、通用しない」とは言っておりません。
+- クラウドインフラ供給者側の視点は、怖くて書けません…。
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[コンテナ化したDatadog agentを使ってDockerのモニターリング&管理]]></title>

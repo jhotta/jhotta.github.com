@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)の続きです。GalileoのGPIOの基礎知識は、プログラムのDebugに必要です。GPOIを便利に使うためのラッパーライブラリーやるべきことの内容的を理解すれば簡単な操作ですが、 &hellip;">
+  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(前編)でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。 &hellip;">
   
 
-  <meta name="description" content="Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)の続きです。GalileoのGPIOの基礎知識は、プログラムのDebugに必要です。GPOIを便利に使うためのラッパーライブラリーやるべきことの内容的を理解すれば簡単な操作ですが、 &hellip;">
+  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(前編)でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,390 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-13T13:40:00+09:00" pubdate data-updated="true">May 13<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
+しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo su
+</span><span class='line'><span class="nb">cd</span> /root/.datadog-agent
+</span><span class='line'>sh bin/agent start
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ここで僕が参考にしたのが、<code>/root/.datadog-agent/bin/agnet</code>です。このスクリプトの<code>start</code>, <code>stop</code>のあたりに注目します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">case</span> <span class="nv">$action</span> in
+</span><span class='line'>    start<span class="o">)</span>
+</span><span class='line'>        <span class="k">if </span>supervisor_running; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Supervisor is already running&quot;</span>
+</span><span class='line'>            execute_if_supervisor_running start all
+</span><span class='line'>            <span class="nb">exit </span>0
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Starting supervisor&quot;</span>
+</span><span class='line'>            supervisord -c <span class="nv">$SUPERVISOR_CONF_FILE</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'>        ;;
+</span><span class='line'>
+</span><span class='line'>    stop<span class="o">)</span>
+</span><span class='line'>        execute_if_supervisor_running stop all
+</span><span class='line'>        <span class="nb">exit</span> <span class="nv">$?</span>
+</span><span class='line'>        ;;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>…ということで、<a href="http://supervisord.org/">supervisor</a>って何だろうと思いながら、googleで検索すると<a href="http://qiita.com/yushin/items/15f4f90c5663710dbd56">「Supervisorで簡単にデーモン化」</a>みたいなtoolらしいです。そこで対応OSのinit.dでは、supervisorを使わずにDD-Agentが起動しているのかと思いubuntuでinit.d以下のdatadog-agentスクリプトを見てみましたが、ここでも、supervisorを使っていました。</p>
+
+<p>今回は難しいことを考えずに<code>/root/.datadog-agent/bin/agnet</code>の手順を再利用するこにします。startとstopのコード部分で関数として切り出されている部分をshellのコマンドに戻しディレクトリを調整すると次のようなスクリプトになりました。start,stop,restartしかできない簡単なものですがRaspberry Piの起動時に必要な最低限の要件は満たしていると思います。(error処理の観点からは、まだまだな…)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#! /bin/sh</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">### BEGIN INIT INFO</span>
+</span><span class='line'><span class="c"># Provides: datadog-agent</span>
+</span><span class='line'><span class="c"># Short-Description: Start and start datadog-agent</span>
+</span><span class='line'><span class="c"># Description: datadog-agent is the monitoring Agent component for Datadog</span>
+</span><span class='line'><span class="c"># Required-Start: $remote_fs $syslog</span>
+</span><span class='line'><span class="c"># Required-Stop: $remote_fs $syslog</span>
+</span><span class='line'><span class="c"># Default-Start: 2 3 4 5</span>
+</span><span class='line'><span class="c"># Default-Stop: 0 1 6</span>
+</span><span class='line'><span class="c">### END INIT INFO</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">DD_BASE</span><span class="o">=</span><span class="s2">&quot;/root/.datadog-agent&quot;</span>
+</span><span class='line'><span class="nv">SOCK_FILE</span><span class="o">=</span><span class="s2">&quot;/root/.datadog-agent/supervisord/agent-supervisor.sock&quot;</span>
+</span><span class='line'>
+</span><span class='line'>supervisor_running<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="o">[</span> -e <span class="nv">$SOCK_FILE</span> <span class="o">]</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">case</span> <span class="nv">$1</span> in
+</span><span class='line'>    start<span class="o">)</span>
+</span><span class='line'>        <span class="k">if </span>supervisor_running; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Supervisor is already running&quot;</span>
+</span><span class='line'>            <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf start all
+</span><span class='line'>            <span class="nb">exit </span>0
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Starting Supervisor&quot;</span>
+</span><span class='line'>            <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisord -c supervisord/supervisord.conf &amp;
+</span><span class='line'>            <span class="nb">exit </span>0
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'>        ;;
+</span><span class='line'>
+</span><span class='line'>    stop<span class="o">)</span>
+</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
+</span><span class='line'>        <span class="nb">exit </span>0
+</span><span class='line'>        ;;
+</span><span class='line'>
+</span><span class='line'>    restart<span class="o">)</span>
+</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
+</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf start all
+</span><span class='line'>        <span class="nb">exit </span>0
+</span><span class='line'>        ;;
+</span><span class='line'>
+</span><span class='line'><span class="k">esac</span>
+</span><span class='line'><span class="nb">exit </span>0
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>スクリプト前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
+
+<p>startの部分でsupervisord.sockの存在確認をしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみにデーモンとして起動して欲しいからです。
+起動以降は<code>supervisorctl</code>によるデーモンへの管理操作依頼コマンドへと移行します。</p>
+
+<p>このスクリプトを<code>datadog-agent</code>のファイル名で<code>/etc/init.d</code>に設置し実行権限を付与します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /etc/init.d
+</span><span class='line'>vi datadog-agent <span class="c"># 先の内容をコピペします</span>
+</span><span class='line'>chmod 755 datadog-agent
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>datadog-agent</code>の動作の確認をします。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>./datadog-agent start
+</span><span class='line'>./datadog-agent stop
+</span><span class='line'>./datadog-agent restart
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>最後に、<code>datadog-agent</code>を自動起動スクリプトとして登録します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>update-rc.d datadog-agent defaults
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ここで、Raspbery Piを再起動します。Raspberry Piが再起動し、sshでアクセスできたら、次のコマンドを実行してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo su
+</span><span class='line'><span class="nb">cd</span> /root/.datadog-agent
+</span><span class='line'>sh bin/agent info
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Raspberry Piの起動時にDD-Agentが正しく起動していれば、次のように出力されます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">===================</span>
+</span><span class='line'>Collector <span class="o">(</span>v 4.2.1<span class="o">)</span>
+</span><span class='line'><span class="o">===================</span>
+</span><span class='line'>
+</span><span class='line'>  Status date: 2014-05-13 15:35:31 <span class="o">(</span>11s ago<span class="o">)</span>
+</span><span class='line'>  Pid: 2168
+</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+</span><span class='line'>  Python Version: 2.7.3
+</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
+</span><span class='line'>
+</span><span class='line'>  <span class="nv">Clocks</span>
+</span><span class='line'>  <span class="o">======</span>
+</span><span class='line'>
+</span><span class='line'>    NTP offset: 0.0006 s
+</span><span class='line'>    System UTC <span class="nb">time</span>: 2014-05-13 06:35:43.754188
+</span><span class='line'>
+</span><span class='line'>  <span class="nv">Paths</span>
+</span><span class='line'>  <span class="o">=====</span>
+</span><span class='line'>
+</span><span class='line'>    conf.d: /root/.datadog-agent/agent/conf.d
+</span><span class='line'>    checks.d: /root/.datadog-agent/agent/checks.d
+</span><span class='line'>
+</span><span class='line'>  <span class="nv">Hostnames</span>
+</span><span class='line'>  <span class="o">=========</span>
+</span><span class='line'>
+</span><span class='line'>    socket-hostname: raspberrypi
+</span><span class='line'>    ec2-hostname: raspberrypi
+</span><span class='line'>    hostname: raspberrypi
+</span><span class='line'>    socket-fqdn: raspberrypi
+</span><span class='line'>
+</span><span class='line'>  <span class="nv">Checks</span>
+</span><span class='line'>  <span class="o">======</span>
+</span><span class='line'>
+</span><span class='line'>    network
+</span><span class='line'>    -------
+</span><span class='line'>      - instance <span class="c">#0 [OK]</span>
+</span><span class='line'>      - Collected 8 metrics &amp; 0 events
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>  <span class="nv">Emitters</span>
+</span><span class='line'>  <span class="o">========</span>
+</span><span class='line'>
+</span><span class='line'>    - http_emitter <span class="o">[</span>OK<span class="o">]</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">===================</span>
+</span><span class='line'>Dogstatsd <span class="o">(</span>v 4.2.1<span class="o">)</span>
+</span><span class='line'><span class="o">===================</span>
+</span><span class='line'>
+</span><span class='line'>  Status date: 2014-05-13 15:35:44 <span class="o">(</span>0s ago<span class="o">)</span>
+</span><span class='line'>  Pid: 2166
+</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+</span><span class='line'>  Python Version: 2.7.3
+</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
+</span><span class='line'>
+</span><span class='line'>  Flush count: 4391
+</span><span class='line'>  Packet Count: 0
+</span><span class='line'>  Packets per second: 0.0
+</span><span class='line'>  Metric count: 0
+</span><span class='line'>  Event count: <span class="nv">0</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">===================</span>
+</span><span class='line'>Forwarder <span class="o">(</span>v 4.2.1<span class="o">)</span>
+</span><span class='line'><span class="o">===================</span>
+</span><span class='line'>
+</span><span class='line'>  Status date: 2014-05-13 15:35:45 <span class="o">(</span>1s ago<span class="o">)</span>
+</span><span class='line'>  Pid: 2167
+</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
+</span><span class='line'>  Python Version: 2.7.3
+</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
+</span><span class='line'>
+</span><span class='line'>  Queue Size: 0 bytes
+</span><span class='line'>  Queue Length: 0
+</span><span class='line'>  Flush Count: 2901
+</span><span class='line'>  Transactions received: 1395
+</span><span class='line'>  Transactions flushed: 1395
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できます。</p>
+
+<p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -707,89 +1091,6 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-24T16:53:00+09:00" pubdate data-updated="true">Apr 24<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。</p>
-
-<p><a href="http://docs.datadoghq.com/guides/dogstatsd/">DogStatsD</a>は、NYC発祥の物販サイト<a href="https://www.etsy.com/">Etsy</a>がFOSS化している<a href="https://github.com/etsy/statsd/">StatsD</a>のプロトコルを実装したメトリクス集積サーバ(a metrics aggregation server)です。DogStatsDは、DD-agentに同胞されているので、既にDD-agentが動作していればすぐに使うことができます。(但し、Intel Galileoのようにデーモンを手動で起動するケースは、dogstatsdを起動している必要があります。)</p>
-
-<p><em>StatsD及びStatsDプロトコルは、DevOpsを実践している欧米企業で各種のメトリックスを収集するために広く使われているソフトウェアとプロトコルです。</em></p>
-
-<p><img class="center" src="/images/blog-images/dogstatsd.png" width="800" height="800" title="DogStatsD" alt="DogStatsD"></p>
-
-<p>DogStatsDは、アプリケーションからUDPで受け取ったメトリックスを一旦ホスト内で蓄積します。その後一定時間ことに、DatadogのサイトにHTTPSで送信します。Datagogのサイトでは、DogStatsDから受けとったメトリックスも名前スペースとタグ付によって管理され、他のメトリックスと同様にグラフ化することができるようになっています。</p>
-
-<p>DogStatsDとの通信がなぜUDPかというという事に関しては、「この間の通信の障害や遅延によってアプリケーションの動作をストールさせないため」と書いてありました。</p>
-
-<h3>DogStatsDのラッパーライブラリーについて</h3>
-
-<p>DogStatsDへのメトリックス送信手続きを簡素化するために、一般的な言語向けにラッパーライブラリーが提供されています。これらのラッパーライブラリーを活用すると数行のコード追加で任意メトリックスをDogStatsDに転送することができます。</p>
-
-<p>以下に代表的なライブラリーを紹介しておきます。</p>
-
-<h4>Datadogによって提供されているライブラリー</h4>
-
-<p><strong>Python: </strong>
-<a href="https://github.com/DataDog/dogstatsd-python">dogstatsd-python</a> &ndash; Python DogStatsD client.</p>
-
-<p><strong>Ruby: </strong>
-<a href="https://github.com/DataDog/dogstatsd-ruby">dogstatsd-ruby</a> &ndash; Ruby DogStatsD client.</p>
-
-<p><strong>PHP: </strong>
-<a href="https://github.com/DataDog/php-datadogstatsd">php-datadogstatsd</a> &ndash; PHP DogStatsD client.</p>
-
-<p><strong>C#: </strong>
-<a href="https://github.com/DataDog/dogstatsd-csharp-client">dogstatsd-csharp-client</a> &ndash; C# DogStatsD client.</p>
-
-<h4>コミュニティーによって提供されいるライブラリー</h4>
-
-<p><strong>Java: </strong>
-<a href="https://github.com/indeedeng/java-dogstatsd-client">java-dogstatsd-client</a> &ndash; DogStatsD Client for Java, <a href="https://github.com/indeedeng">Indeed</a>提供.</p>
-
-<p><strong>Node.js: </strong>
-<a href="https://github.com/joybro/node-dogstatsd">node-dogstatsd</a> &ndash; Node.js DogStatsD client, <a href="https://github.com/joybro">Young Han Lee</a>提供.</p>
-
-<p><strong>Perl: </strong>
-<a href="https://github.com/zipkid/dogstatsd-perl">dogstatsd-perl</a> &ndash; Perl DogStatsD client, <a href="https://github.com/zipkid">Stefan Goethals</a>提供.</p>
-
-<p><strong>Ruby: </strong>
-<a href="https://github.com/mavenlink/metriks-dogstatsd">metricks-dogstatsd</a> &ndash; backend for the popular Metriks gem, <a href="https://github.com/mavenlink">Mavenlink</a>提供.</p>
-
-<p><strong>Go: </strong>
-<a href="https://github.com/ooyala/go-dogstatsd/">go-dogstatsd</a> &ndash; dogstatsd client written in Go, <a href="https://github.com/ooyala">Ooyala</a>提供.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -805,6 +1106,10 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/13/what-i-think-about-libswarm-1/">DockerHubとlibswarmの提供で、エコシステム基盤の定義?</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a>
@@ -840,10 +1145,6 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
     
       <li class="post">
         <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
       </li>
     
   </ul>

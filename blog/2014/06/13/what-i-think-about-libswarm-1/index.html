@@ -5,15 +5,15 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>筆者について - Etizolam</title>
+  <title>DockerHubとlibswarmの提供で、エコシステム基盤の定義? - Etizolam</title>
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="筆者について      Apr 14th, 2014      DevOps, Chef, Sensu, SoftLayerなど、近年のITC業界の開発トレンドの種を次々発掘し、日本国内に植え続ける、超高感度エンジア兼コミュニケーター。 &hellip;">
-  
+  <meta name="description" content="dockercon14で発表された、libswarmが成熟するとクラウドのエコシステムが変わると実感した。">
+  <meta name="keywords" content="Docker, linux, コンテナ, libswarm, libchin, DockerHub">
 
-  <meta name="description" content="筆者について      Apr 14th, 2014      DevOps, Chef, Sensu, SoftLayerなど、近年のITC業界の開発トレンドの種を次々発掘し、日本国内に植え続ける、超高感度エンジア兼コミュニケーター。 &hellip;">
-  
+  <meta name="description" content="dockercon14で発表された、libswarmが成熟するとクラウドのエコシステムが変わると実感した。">
+  <meta name="keywords" content="Docker, linux, コンテナ, libswarm, libchin, DockerHub">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -21,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://jhotta.github.io/about">
+  <link rel="canonical" href="http://jhotta.github.io/blog/2014/06/13/what-i-think-about-libswarm-1">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Etizolam" type="application/atom+xml">
@@ -80,11 +80,15 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">筆者について</h1>
-    <p class="meta">
+    
+      <h1 class="entry-title">DockerHubとlibswarmの提供で、エコシステム基盤の定義?</h1>
+    
+    
+      <p class="meta">
+        
 
 
 
@@ -96,47 +100,75 @@
   
 
 
-<time datetime="2014-04-14T19:00:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time></p>
+<time datetime="2014-06-13T13:29:00+09:00" pubdate data-updated="true">Jun 13<span>th</span>, 2014</time>
+        
+      </p>
+    
   </header>
-  
-  <p>DevOps, Chef, Sensu, SoftLayerなど、近年のITC業界の開発トレンドの種を次々発掘し、日本国内に植え続ける、超高感度エンジア兼コミュニケーター。</p>
 
-<p>確実な技術の裏付けと世界的なエンジニアネットワークを駆使し、フリーなポジションでじっくりと新技術トレンドを吟味することを常に心がけている。</p>
 
-<h2>Linkes</h2>
+<div class="entry-content"><p><a href="http://www.dockercon.com/">dockercon14</a>が終わって、僕が注目したいのは、<a href="https://hub.docker.com/">DockerHub</a>と<a href="https://github.com/docker/libswarm">Libswarm</a>です。</p>
+
+<p>僕は、LibswarmとDockerHubの関係に関してgitとgithubの関係に似ているような気がしてます。<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">[速報]Docker Hub発表。ビルド、テスト、デプロイの自動化、Dockerイメージの管理など。Dockerのプラットフォーム化を推進(Publickey)</a>にも書かれているように、<strong>&ldquo;実行可能なアプリケーションのDockerイメージを管理する機能などを備えたサービス&rdquo;</strong>なんだとすると、そのDockerイメージをCLIやプログラム内から使い倒すの必要なのがlibswarmではないかと思います。</p>
+
+<p><img class="right" src="/images/blog-images/Docker_the_road_ahead.png" width="300" height="300" title="Docker the road ahead" alt="Docker the road ahead"></p>
+
+<p>DockerHub&amp;libswarm共に未だ発表されて間もないしので検索してもあまり情報が見つからないのですが、次の幾つかのサイトを見ていると、新しい時代の幕開けが目の前で始まっている感じがし、ワクワクしてしかたがない。</p>
 
 <ul>
-<li>Linkedin: <a href="http://www.linkedin.com/pub/naotaka-jay-hotta/15/543/824" title="Linkedin">Naotaka Jay Hotta</a></li>
-<li>facebook: <a href="https://www.facebook.com/naotaka.j.hotta" title="facebook">Naotaka Jay Hotta</a></li>
-<li>twitter: <a href="https://twitter.com/jhotta" title="twitter">@jhotta</a></li>
+<li><a href="http://www.slideshare.net/shykes/docker-the-road-ahead">Docker: the road ahead</a></li>
+<li><a href="https://www.youtube.com/watch?v=a_YbxWbHgQA">Orchard + libswarm demo from DockerCon</a></li>
+<li><a href="http://www.activestate.com/blog/2014/06/libswarm-docker-orchestration-announced">libswarm &ndash; Docker Orchestration Announced</a></li>
+<li><a href="http://java.dzone.com/articles/libswarm-docker-orchestration?utm_source=feedburner&amp;utm_medium=feed&amp;utm_campaign=Feed%3A+javalobby%2Ffrontpage+%28Javalobby+%2F+Java+Zone%29">libswarm &ndash; Docker Orchestration Announced</a></li>
 </ul>
 
 
-<h6>謝辞: 最愛の妻と家族の暖かい支援に感謝!</h6>
+<p>そして<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">Publickeyの記事</a>のまとめで、<strong>&ldquo;ここから見えてくるのは、Docker社のチャレンジは単にLinuxのコンテナ技術を製品化するだけでなく、これまで主にOSベンダーが築いてきたOSを中心とした開発ツールやアプリケーションベンダーとのエコシステムを、コンテナ型仮想化技術を核に再構築しようとしているところです。いまのDockerの勢いを見ていると、このエコシステムの構築とDockerのプラットフォーム化の実現は一定のに説得力があるように思います。&rdquo;</strong>って、非常に意味のある言葉のような気がしています。</p>
 
-  
-    <footer>
-      <p class="meta">
-        
-        
+<p>githubエコシステムができたことで”コードに対する価値感”や”開発の進め方”が大きく変わったように、<strong>Dockerエコシステム</strong>が形成されていくことで、開発運用の方法が根底から変わっていくのではないかと思います。</p>
 
+<p>そしてクラウドインフラの利用者側として、僕が今感じているのは、「今までのやり方は時代遅れになる、できるところから地道に次の準備を始めるしかない!」ってことかなぁと思う。</p>
 
-
-
-
+<pre><code>- 「時代遅れが、通用しない」とは言っておりません。
+- クラウドインフラ供給者側の視点は、怖くて書けません…。
+</code></pre>
+</div>
 
 
-
-  
-
-
-<time datetime="2014-04-14T19:00:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
-        
-      </p>
+  <footer>
+    <p class="meta">
       
-        <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/about/index.html" data-via="" data-counturl="http://jhotta.github.io/about/index.html" >Tweet</a>
+
+<span class="byline author vcard">Posted by <span class="fn">@jhotta</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-06-13T13:29:00+09:00" pubdate data-updated="true">Jun 13<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/docker/'>Docker</a>, <a class='category' href='/blog/categories/dockerhub/'>DockerHub</a>, <a class='category' href='/blog/categories/libswarm/'>libswarm</a>, <a class='category' href='/blog/categories/linux/'>linux</a>, <a class='category' href='/blog/categories/kontena/'>コンテナ</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://jhotta.github.io/blog/2014/06/13/what-i-think-about-libswarm-1/" data-via="" data-counturl="http://jhotta.github.io/blog/2014/06/13/what-i-think-about-libswarm-1/" >Tweet</a>
   
   
   
@@ -144,9 +176,14 @@
   
 </div>
 
+    
+    <p class="meta">
       
-    </footer>
-  
+        <a class="basic-alignment left" href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/" title="Previous Post: コンテナ化したDatadog agentを使ってDockerのモニターリング&管理">&laquo; コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a>
+      
+      
+    </p>
+  </footer>
 </article>
 
 </div>

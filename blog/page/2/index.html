@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="始まり:先日、Tokyo HackerSpace(以後THS)で開催されたRaspberry Pi Work Shop @ THS #3に参加しました。丁度、GPIOで収集した情報でDatadog上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。 &hellip;">
+  <meta name="description" content="C言語を使ってPython拡張についてもう少し…今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)1. C言語でのアプリケーション開発。2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp &hellip;">
   
 
-  <meta name="description" content="始まり:先日、Tokyo HackerSpace(以後THS)で開催されたRaspberry Pi Work Shop @ THS #3に参加しました。丁度、GPIOで収集した情報でDatadog上でグラフ化して意義のあるデータの事例を探していたところなので、一石二鳥的なタイミングでした。 &hellip;">
+  <meta name="description" content="C言語を使ってPython拡張についてもう少し…今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)1. C言語でのアプリケーション開発。2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,430 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/29/consider-python-extention-gpio-usage-2/">温度センサーDHT11をRaspberry piで使う(C言語でpython拡張)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-29T19:58:00+09:00" pubdate data-updated="true">May 29<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>C言語を使ってPython拡張についてもう少し…</h2>
+
+<p>今回の事例のようにC言語でPythonの拡張するには、次のような順序で作業を進めていくことなると思います。(当たり前か…)</p>
+
+<pre><code>1. C言語でのアプリケーション開発。
+2. Pythonから扱えるようにするための、C言語ソースへのラッピンコード追記 &amp; setup.pyの追加。
+3. コンパイルとテスト。
+</code></pre>
+
+<p>第1,第3ステップは、一般的な開発と大差がないので今回のスコープ外ということにし第2ステップに注目して解説を進めていくことにします。</p>
+
+<p>尚、Raspberry Piの場合は、ビルド環境も簡単にインストールできるので実機でビルドしながら開発を進めるという方法をとるのがいいと思います。C言語のソースのサイズにもよると思いますが、今回のようにセンサーを初期化する関数と計測した値を読み込む関数の2つ程度ならビルド時間も許容できるのではないかと思います。</p>
+
+<p>(実開発はしないので、次の開発環境準備部分は読み飛ばしても大丈夫です。)</p>
+
+<p>まずは、<code>apt-get</code>コマンドで、gcc及び一般的な開発環境をインストールします。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo apt-get install pyhon-dev build-essential
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>次に、GPIOを制御しているBCM2835のheaderファイルもインストールします。
+インストール方法に関しては、<a href="http://www.airspayce.com/mikem/bcm2835/">C library for Broadcom BCM 2835 as used in Raspberry Pi</a>のドキュメントを参考に<a href="http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz">cm2835-1.36.tar.gz</a>をDLし、次のようにビルド&amp;インストールします。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>tar zxvf bcm2835-1.xx.tar.gz
+</span><span class='line'><span class="nb">cd </span>bcm2835-1.xx
+</span><span class='line'>./configure
+</span><span class='line'>make
+</span><span class='line'>sudo make check
+</span><span class='line'>sudo make install
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>尚、bcm2835のheaderファイルで使われている各モジュールの詳細は<a href="http://www.airspayce.com/mikem/bcm2835/modules.html">http://www.airspayce.com/mikem/bcm2835/modules.html</a>を参照してください。(大元の資料が一番ですよね…)</p>
+
+<p>ここれで、Raspberry Pi上でのPython拡張モジュールの開発の準備は完了です。</p>
+
+<h2>C言語ソースへのラッピンコード追記</h2>
+
+<p>C言語のコードを拡張していくには次の4項目を書き足すことになります。</p>
+
+<pre><code>1. Python用のheaderファイル宣言　(#include &lt;Python.h&gt;)
+2. モジュールに含む関数へのPythonラッパー　(static PyObject * モジュール名_関数名()の部分)
+3. モジュール内の関数のリスト (static PyMethodDef モジュール名Methods[]の部分)
+4. モジュールをイニシャライズする関数　(void initModule()の部分)
+</code></pre>
+
+<p>前回のポストで紹介したadafruitが提供してくれているリポジトリの中のAdafruit_DHT_Driver_Pythonディレクトリにある、dhtreader.cというファイルを項目に従って見ていくことにします。</p>
+
+<h3>1. Python用のheaderファイル宣言</h3>
+
+<p>29行目で、ヘッダーファイルの宣言をしていますね。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>29 <span class="c">#include &lt;Python.h&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>2. モジュールに含む関数へのPythonラッパー</h3>
+
+<p>128~132行目にかけてPython環境からC言語のbcm2835に初期化のできるようPythonのラッパーを書いていますね。</p>
+
+<p>ここでPyObjectを定義し、モジュール名と関数名を”_”(アンダースコア)で繋げて書くことで、当該モジュールをインポートした時にPython Scriptからdhtreader.init()みたいな方法で実行できるようにしています。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>static PyObject * <span class="o">[</span>モジュール名<span class="o">]</span>_<span class="o">[</span>関数名<span class="o">](</span>PyObject *self, PyObject *args<span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Pythoラッパーの一般的な役割は、Pythonの値を受け取ってCの値に変換し、Cの適切ば関数を実行することです。そして、Cの関数が実行された後でCの値をPythonの値に戻してあげることです。</p>
+
+<p>CからPythonには、Py_BuildValue()を使って、単体値かタプル形式のPythonオブジェクトを戻すことができます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">128</span> <span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+</span><span class='line'><span class="mi">129</span> <span class="nf">dhtreader_init</span><span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="mi">130</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">131</span>     <span class="k">return</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;i&quot;</span><span class="p">,</span> <span class="n">bcm2835_init</span><span class="p">());</span>
+</span><span class='line'><span class="mi">132</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Py_BuildValue()では、第1引数の文字のフォーマットに合わせて、第2引数の値をオブジェクトに変換します。</p>
+
+<p>フォーマット文字は、次の表の仕様になっています。</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> [フォーマット文字]　　 </th>
+<th> [Pythonタイプ]　　　　　　 </th>
+<th> [C/C++ タイプ] </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> s, s#              </td>
+<td> str/unicode, len()      </td>
+<td> char*(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> z, z#              </td>
+<td> str/unicode/None, len() </td>
+<td> char*/NULL(, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> u, u#              </td>
+<td> unicode, len()          </td>
+<td> (Py_UNICODE*, int)</td>
+</tr>
+<tr>
+<td></td>
+<td> i                  </td>
+<td> int                     </td>
+<td> int</td>
+</tr>
+<tr>
+<td></td>
+<td> b                  </td>
+<td> int                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> h                  </td>
+<td> int                     </td>
+<td> short</td>
+</tr>
+<tr>
+<td></td>
+<td> l                  </td>
+<td> int                     </td>
+<td> long</td>
+</tr>
+<tr>
+<td></td>
+<td> k                  </td>
+<td> int or long             </td>
+<td> unsigned long</td>
+</tr>
+<tr>
+<td></td>
+<td> I                  </td>
+<td> int or long             </td>
+<td> unsigned int</td>
+</tr>
+<tr>
+<td></td>
+<td> B                  </td>
+<td> int                     </td>
+<td> unsigned char</td>
+</tr>
+<tr>
+<td></td>
+<td> H                  </td>
+<td> int                     </td>
+<td> unsigned short</td>
+</tr>
+<tr>
+<td></td>
+<td> L                  </td>
+<td> long                    </td>
+<td> long long</td>
+</tr>
+<tr>
+<td></td>
+<td> K                  </td>
+<td> long                    </td>
+<td> unsigned long long</td>
+</tr>
+<tr>
+<td></td>
+<td> c                  </td>
+<td> str                     </td>
+<td> char</td>
+</tr>
+<tr>
+<td></td>
+<td> d                  </td>
+<td> float                   </td>
+<td> double</td>
+</tr>
+<tr>
+<td></td>
+<td> f                  </td>
+<td> float                   </td>
+<td> float</td>
+</tr>
+<tr>
+<td></td>
+<td> D                  </td>
+<td> complex                 </td>
+<td> Py_Complex*</td>
+</tr>
+<tr>
+<td></td>
+<td> O                  </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> S                  </td>
+<td> str                     </td>
+<td> PyStringObject</td>
+</tr>
+<tr>
+<td></td>
+<td> Nb                 </td>
+<td> (any)                   </td>
+<td> PyObject*</td>
+</tr>
+<tr>
+<td></td>
+<td> O&amp;                 </td>
+<td> (any)                   </td>
+<td> (any)</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>先のPy_BuildValue()例では、<code>bcm2835_init()</code>の結果がint値になるので、<code>i</code>を指定してPythonオブジェクトに戻しています。</p>
+
+<p>さて、次のブロックでは、Pythonから受け取った値をCで使える値に変換している部分に注目します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">134</span> <span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+</span><span class='line'><span class="mi">135</span> <span class="n">dhtreader_read</span><span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'><span class="mi">136</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">137</span>     <span class="kt">int</span> <span class="n">type</span><span class="p">,</span> <span class="n">dhtpin</span><span class="p">;</span>
+</span><span class='line'><span class="mi">138</span>
+</span><span class='line'><span class="mi">139</span>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;ii&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">type</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dhtpin</span><span class="p">))</span>
+</span><span class='line'><span class="mi">140</span>        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class='line'><span class="mi">141</span>
+</span><span class='line'><span class="mi">142</span>    <span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">;</span>
+</span><span class='line'><span class="mi">143</span>    <span class="kt">int</span> <span class="n">re</span> <span class="o">=</span> <span class="n">readDHT</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="n">dhtpin</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">h</span><span class="p">);</span>
+</span><span class='line'><span class="mi">144</span>
+</span><span class='line'><span class="mi">145</span>    <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">146</span>        <span class="k">return</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;(d,d)&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+</span><span class='line'><span class="mi">147</span>    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">148</span> <span class="err">#</span><span class="n">ifdef</span> <span class="n">DEBUG</span>
+</span><span class='line'><span class="mi">149</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;sensor read failed! not enough data received</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">150</span> <span class="err">#</span><span class="n">endif</span>
+</span><span class='line'><span class="mi">151</span>    <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">152</span> <span class="err">#</span><span class="n">ifdef</span> <span class="n">DEBUG</span>
+</span><span class='line'><span class="mi">153</span>        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;sensor read failed! checksum failed!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">154</span> <span class="err">#</span><span class="n">endif</span>
+</span><span class='line'><span class="mi">156</span>    <span class="p">}</span>
+</span><span class='line'><span class="mi">157</span>
+</span><span class='line'><span class="mi">158</span>    <span class="k">return</span> <span class="nf">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="mi">159</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>139行目の<code>PyArg_ParseTuple()</code>とある部分がPythonから渡ってきた値をCの値に置き換えています。この関数でフォーマット文字の列をつかって渡ってくる値を形式を指定し変換します。</p>
+
+<p>計測には、C言語で書かれたソースの前半(31~91行)で指定している<code>readDHT()</code>関数を使い、結果は<code>Py_BuildValue()</code>で、floatの数値をタプルとしてPythonオブジェクにしているのが分かりますね。</p>
+
+<p>それ以外のDEBUG用のコードは、<code>readDHT()</code>の戻り値によって、プリントディバッグできるようになっているのでしょうね…。</p>
+
+<h3>3. モジュール内の関数のリスト</h3>
+
+<p>次の部分の<code>static PyMethodDef DHTReaderMethods[]</code>ではモジュールをimportした後に、PythonインタプリターがそれぞれのメソッドとCの関数との対応表を提供しています。</p>
+
+<p><code>DHTReaderMethods</code>は、関数リストを定義するための関数の名前です。モジュール名に<code>Methods</code>を続けて書きます。この名前は、次の初期化のブロックでインタープリタに伝える関数リストの指定しに使います。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">161</span> <span class="k">static</span> <span class="n">PyMethodDef</span> <span class="n">DHTReaderMethods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">162</span>    <span class="p">{</span><span class="s">&quot;init&quot;</span><span class="p">,</span> <span class="n">dhtreader_init</span><span class="p">,</span> <span class="n">METH_VARARGS</span><span class="p">,</span>
+</span><span class='line'><span class="mi">163</span>     <span class="s">&quot;initialize dht reader&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="mi">164</span>    <span class="p">{</span><span class="s">&quot;read&quot;</span><span class="p">,</span> <span class="n">dhtreader_read</span><span class="p">,</span> <span class="n">METH_VARARGS</span><span class="p">,</span>
+</span><span class='line'><span class="mi">165</span>     <span class="s">&quot;temperature and humidity from sensor&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="mi">166</span>    <span class="p">{</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">}</span>        <span class="cm">/* Sentinel */</span>
+</span><span class='line'><span class="mi">167</span> <span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>内容は、次の通りです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="p">{</span><span class="s">&quot;[Pythonメソッド名]&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">C</span><span class="err">コード内の関数名</span><span class="p">],</span> <span class="p">[</span><span class="n">Python</span><span class="err">から渡す引数の形式指定</span><span class="p">],</span> <span class="s">&quot;[解説]&quot;</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>尚、[Pythonから渡す引数の形式指定]の指定には、<code>METH_VARARGS</code>と<code>METH_KEYWARD</code>があります。(<code>METH_KEYWARD</code>については、<code>PyArg_ParseTupleKeywards()</code>とのセットで指定するは分かっているのですが詳細な用法が…。）</p>
+
+<p>169行の<code>NULL</code>のは、リストの終わりを示す記号になります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>4. モジュールをイニシャライズする関数</h3>
+
+<p>最後の部分は、モジュールがインポートされた時にPythonインタープリタによって実行される関数です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="mi">169</span> <span class="n">PyMODINIT_FUNC</span>
+</span><span class='line'><span class="mi">170</span> <span class="n">initdhtreader</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span><span class='line'><span class="mi">171</span> <span class="p">{</span>
+</span><span class='line'><span class="mi">172</span>    <span class="n">PyObject</span> <span class="o">*</span><span class="n">m</span><span class="p">;</span>
+</span><span class='line'><span class="mi">173</span>
+</span><span class='line'><span class="mi">174</span>    <span class="n">m</span> <span class="o">=</span> <span class="n">Py_InitModule</span><span class="p">(</span><span class="s">&quot;dhtreader&quot;</span><span class="p">,</span> <span class="n">DHTReaderMethods</span><span class="p">);</span>
+</span><span class='line'><span class="mi">175</span>    <span class="k">if</span> <span class="p">(</span><span class="n">m</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+</span><span class='line'><span class="mi">176</span>        <span class="k">return</span><span class="p">;</span>
+</span><span class='line'><span class="mi">177</span> <span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">Py_InitModule</span><span class="p">(</span><span class="s">&quot;[モジュール名]&quot;</span><span class="p">,</span> <span class="p">[</span><span class="err">モジュール内の関数を指定した</span><span class="n">C</span><span class="err">内の関数</span><span class="p">])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>以上で、dhtreader.c内のコードでpython拡張に関わる部分はの解説は全てです。</p>
+
+<p>試しに取得しているレポジトリーのAdafruit_DHT_Driver_Pythonディレクトリで、次のコマンドを実行すると拡張モジュールがビルドされているはずです。~/Adafruit-Raspberry-Pi-Python-Code/Adafruit_DHT_Driver_Python/build/lib.linux-armv6l-2.7以下を見てみてください。(自分で書いているわけではないので、できるに決まってますよね〜)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>python setup.py build
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>感想:</h3>
+
+<p>調べてみて感じたことは、「CソースからPython拡張モジュールにするための追記自体はそれほど複雑ではない」ということです。僕にとっては、むしろ元のCソースの処理を理解し、通信の方式やバイナリをCでハンドリングする部分を理解するのに頭を使ったような気がします。</p>
+
+<p>今後モノのインターネットが進むと、Pythonでのプロトタイピングなんてケースが多々出てくると思います。Cとの兼ね合いでちょっと困ったという時には、この手法は十分使えるのではないでしょうか。<a href="http://docs.python.jp/2/extending/extending.html">Python本家のドキュメント</a>を一読しておくと、いざという時に慌てなくすむかもしれませんね。</p>
+
+<h2>みちくさ:</h2>
+
+<p>僕は、未だ試していませんが、<a href="https://github.com/mubeta06/py-libbcm2835">py-libbcm2835</a>というCtypesのバインディングもあるようです。そちらも合わせて参考にしてみてください。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -231,390 +655,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/13/datadog-on-raspberry-pi-2/">Raspberry piにもDatadog Agentをインストールしてみる(後編)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-13T13:40:00+09:00" pubdate data-updated="true">May 13<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a>でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。
-しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo su
-</span><span class='line'><span class="nb">cd</span> /root/.datadog-agent
-</span><span class='line'>sh bin/agent start
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ここで僕が参考にしたのが、<code>/root/.datadog-agent/bin/agnet</code>です。このスクリプトの<code>start</code>, <code>stop</code>のあたりに注目します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="k">case</span> <span class="nv">$action</span> in
-</span><span class='line'>    start<span class="o">)</span>
-</span><span class='line'>        <span class="k">if </span>supervisor_running; <span class="k">then</span>
-</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Supervisor is already running&quot;</span>
-</span><span class='line'>            execute_if_supervisor_running start all
-</span><span class='line'>            <span class="nb">exit </span>0
-</span><span class='line'>        <span class="k">else</span>
-</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Starting supervisor&quot;</span>
-</span><span class='line'>            supervisord -c <span class="nv">$SUPERVISOR_CONF_FILE</span>
-</span><span class='line'>        <span class="k">fi</span>
-</span><span class='line'>        ;;
-</span><span class='line'>
-</span><span class='line'>    stop<span class="o">)</span>
-</span><span class='line'>        execute_if_supervisor_running stop all
-</span><span class='line'>        <span class="nb">exit</span> <span class="nv">$?</span>
-</span><span class='line'>        ;;
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>…ということで、<a href="http://supervisord.org/">supervisor</a>って何だろうと思いながら、googleで検索すると<a href="http://qiita.com/yushin/items/15f4f90c5663710dbd56">「Supervisorで簡単にデーモン化」</a>みたいなtoolらしいです。そこで対応OSのinit.dでは、supervisorを使わずにDD-Agentが起動しているのかと思いubuntuでinit.d以下のdatadog-agentスクリプトを見てみましたが、ここでも、supervisorを使っていました。</p>
-
-<p>今回は難しいことを考えずに<code>/root/.datadog-agent/bin/agnet</code>の手順を再利用するこにします。startとstopのコード部分で関数として切り出されている部分をshellのコマンドに戻しディレクトリを調整すると次のようなスクリプトになりました。start,stop,restartしかできない簡単なものですがRaspberry Piの起動時に必要な最低限の要件は満たしていると思います。(error処理の観点からは、まだまだな…)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#! /bin/sh</span>
-</span><span class='line'>
-</span><span class='line'><span class="c">### BEGIN INIT INFO</span>
-</span><span class='line'><span class="c"># Provides: datadog-agent</span>
-</span><span class='line'><span class="c"># Short-Description: Start and start datadog-agent</span>
-</span><span class='line'><span class="c"># Description: datadog-agent is the monitoring Agent component for Datadog</span>
-</span><span class='line'><span class="c"># Required-Start: $remote_fs $syslog</span>
-</span><span class='line'><span class="c"># Required-Stop: $remote_fs $syslog</span>
-</span><span class='line'><span class="c"># Default-Start: 2 3 4 5</span>
-</span><span class='line'><span class="c"># Default-Stop: 0 1 6</span>
-</span><span class='line'><span class="c">### END INIT INFO</span>
-</span><span class='line'>
-</span><span class='line'><span class="nv">DD_BASE</span><span class="o">=</span><span class="s2">&quot;/root/.datadog-agent&quot;</span>
-</span><span class='line'><span class="nv">SOCK_FILE</span><span class="o">=</span><span class="s2">&quot;/root/.datadog-agent/supervisord/agent-supervisor.sock&quot;</span>
-</span><span class='line'>
-</span><span class='line'>supervisor_running<span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>    <span class="o">[</span> -e <span class="nv">$SOCK_FILE</span> <span class="o">]</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">case</span> <span class="nv">$1</span> in
-</span><span class='line'>    start<span class="o">)</span>
-</span><span class='line'>        <span class="k">if </span>supervisor_running; <span class="k">then</span>
-</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Supervisor is already running&quot;</span>
-</span><span class='line'>            <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf start all
-</span><span class='line'>            <span class="nb">exit </span>0
-</span><span class='line'>        <span class="k">else</span>
-</span><span class='line'><span class="k">            </span><span class="nb">echo</span> <span class="s2">&quot;Starting Supervisor&quot;</span>
-</span><span class='line'>            <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisord -c supervisord/supervisord.conf &amp;
-</span><span class='line'>            <span class="nb">exit </span>0
-</span><span class='line'>        <span class="k">fi</span>
-</span><span class='line'>        ;;
-</span><span class='line'>
-</span><span class='line'>    stop<span class="o">)</span>
-</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
-</span><span class='line'>        <span class="nb">exit </span>0
-</span><span class='line'>        ;;
-</span><span class='line'>
-</span><span class='line'>    restart<span class="o">)</span>
-</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf stop all
-</span><span class='line'>        <span class="nb">cd</span> <span class="nv">$DD_BASE</span> <span class="o">&amp;&amp;</span> venv/bin/supervisorctl -c supervisord/supervisord.conf start all
-</span><span class='line'>        <span class="nb">exit </span>0
-</span><span class='line'>        ;;
-</span><span class='line'>
-</span><span class='line'><span class="k">esac</span>
-</span><span class='line'><span class="nb">exit </span>0
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>スクリプト前半のコメントアウトされている部分を詳しく知りたい人は、<a href="https://wiki.debian.org/LSBInitScripts">LSBInitScripts</a>を参考にしてください。個人的には、<code>/etc/init.d/skeleton</code>などを参考にコピペ&amp;編集することにしています。</p>
-
-<p>startの部分でsupervisord.sockの存在確認をしているのは、<code>supervisord</code>がDD-Agentの管理をするため、Raspberry Piの起動時のみにデーモンとして起動して欲しいからです。
-起動以降は<code>supervisorctl</code>によるデーモンへの管理操作依頼コマンドへと移行します。</p>
-
-<p>このスクリプトを<code>datadog-agent</code>のファイル名で<code>/etc/init.d</code>に設置し実行権限を付与します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /etc/init.d
-</span><span class='line'>vi datadog-agent <span class="c"># 先の内容をコピペします</span>
-</span><span class='line'>chmod 755 datadog-agent
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>datadog-agent</code>の動作の確認をします。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>./datadog-agent start
-</span><span class='line'>./datadog-agent stop
-</span><span class='line'>./datadog-agent restart
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>最後に、<code>datadog-agent</code>を自動起動スクリプトとして登録します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>update-rc.d datadog-agent defaults
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ここで、Raspbery Piを再起動します。Raspberry Piが再起動し、sshでアクセスできたら、次のコマンドを実行してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>sudo su
-</span><span class='line'><span class="nb">cd</span> /root/.datadog-agent
-</span><span class='line'>sh bin/agent info
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Raspberry Piの起動時にDD-Agentが正しく起動していれば、次のように出力されます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-<span class='line-number'>64</span>
-<span class='line-number'>65</span>
-<span class='line-number'>66</span>
-<span class='line-number'>67</span>
-<span class='line-number'>68</span>
-<span class='line-number'>69</span>
-<span class='line-number'>70</span>
-<span class='line-number'>71</span>
-<span class='line-number'>72</span>
-<span class='line-number'>73</span>
-<span class='line-number'>74</span>
-<span class='line-number'>75</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">===================</span>
-</span><span class='line'>Collector <span class="o">(</span>v 4.2.1<span class="o">)</span>
-</span><span class='line'><span class="o">===================</span>
-</span><span class='line'>
-</span><span class='line'>  Status date: 2014-05-13 15:35:31 <span class="o">(</span>11s ago<span class="o">)</span>
-</span><span class='line'>  Pid: 2168
-</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
-</span><span class='line'>  Python Version: 2.7.3
-</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
-</span><span class='line'>
-</span><span class='line'>  <span class="nv">Clocks</span>
-</span><span class='line'>  <span class="o">======</span>
-</span><span class='line'>
-</span><span class='line'>    NTP offset: 0.0006 s
-</span><span class='line'>    System UTC <span class="nb">time</span>: 2014-05-13 06:35:43.754188
-</span><span class='line'>
-</span><span class='line'>  <span class="nv">Paths</span>
-</span><span class='line'>  <span class="o">=====</span>
-</span><span class='line'>
-</span><span class='line'>    conf.d: /root/.datadog-agent/agent/conf.d
-</span><span class='line'>    checks.d: /root/.datadog-agent/agent/checks.d
-</span><span class='line'>
-</span><span class='line'>  <span class="nv">Hostnames</span>
-</span><span class='line'>  <span class="o">=========</span>
-</span><span class='line'>
-</span><span class='line'>    socket-hostname: raspberrypi
-</span><span class='line'>    ec2-hostname: raspberrypi
-</span><span class='line'>    hostname: raspberrypi
-</span><span class='line'>    socket-fqdn: raspberrypi
-</span><span class='line'>
-</span><span class='line'>  <span class="nv">Checks</span>
-</span><span class='line'>  <span class="o">======</span>
-</span><span class='line'>
-</span><span class='line'>    network
-</span><span class='line'>    -------
-</span><span class='line'>      - instance <span class="c">#0 [OK]</span>
-</span><span class='line'>      - Collected 8 metrics &amp; 0 events
-</span><span class='line'>
-</span><span class='line'>
-</span><span class='line'>  <span class="nv">Emitters</span>
-</span><span class='line'>  <span class="o">========</span>
-</span><span class='line'>
-</span><span class='line'>    - http_emitter <span class="o">[</span>OK<span class="o">]</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">===================</span>
-</span><span class='line'>Dogstatsd <span class="o">(</span>v 4.2.1<span class="o">)</span>
-</span><span class='line'><span class="o">===================</span>
-</span><span class='line'>
-</span><span class='line'>  Status date: 2014-05-13 15:35:44 <span class="o">(</span>0s ago<span class="o">)</span>
-</span><span class='line'>  Pid: 2166
-</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
-</span><span class='line'>  Python Version: 2.7.3
-</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
-</span><span class='line'>
-</span><span class='line'>  Flush count: 4391
-</span><span class='line'>  Packet Count: 0
-</span><span class='line'>  Packets per second: 0.0
-</span><span class='line'>  Metric count: 0
-</span><span class='line'>  Event count: <span class="nv">0</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">===================</span>
-</span><span class='line'>Forwarder <span class="o">(</span>v 4.2.1<span class="o">)</span>
-</span><span class='line'><span class="o">===================</span>
-</span><span class='line'>
-</span><span class='line'>  Status date: 2014-05-13 15:35:45 <span class="o">(</span>1s ago<span class="o">)</span>
-</span><span class='line'>  Pid: 2167
-</span><span class='line'>  Platform: Linux-3.10.25+-armv6l-with-debian-7.5
-</span><span class='line'>  Python Version: 2.7.3
-</span><span class='line'>  Logs: &lt;stderr&gt;, syslog:/dev/log
-</span><span class='line'>
-</span><span class='line'>  Queue Size: 0 bytes
-</span><span class='line'>  Queue Length: 0
-</span><span class='line'>  Flush Count: 2901
-</span><span class='line'>  Transactions received: 1395
-</span><span class='line'>  Transactions flushed: 1395
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ここまでできれば、Dogstatsdを使ってGPIOで収集したデータを<a href="http://www.datadoghq.com/">Datadoghq.com</a>へ送信できます。</p>
-
-<p><a href="../../../../../blog/2014/04/11/datadog-on-raspberry-pi-1/">Raspberry piにもDatadog Agentをインストールしてみる(前編)</a></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -630,6 +670,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/13/what-i-think-about-libswarm-1/">DockerHubとlibswarmの提供で、エコシステム基盤の定義?</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/06/11/docker-ize-datadog-with-agent-containers/">コンテナ化したDatadog agentを使ってDockerのモニターリング&管理</a>
@@ -665,10 +709,6 @@
     
       <li class="post">
         <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/14/datadog-agent-for-intel-galileo-1/">Datadog agentをIntel Galileoで動かす(前編)</a>
       </li>
     
   </ul>
