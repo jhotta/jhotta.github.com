@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Docker | Etizolam]]></title>
   <link href="http://jhotta.github.io/blog/categories/docker/atom.xml" rel="self"/>
   <link href="http://jhotta.github.io/"/>
-  <updated>2014-06-14T17:20:53+09:00</updated>
+  <updated>2014-06-14T17:22:12+09:00</updated>
   <id>http://jhotta.github.io/</id>
   <author>
     <name><![CDATA[@jhotta]]></name>
@@ -34,7 +34,7 @@
 </ul>
 
 
-<p>そして<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">Publickeyの記事</a>のまとめで、<strong>&ldquo;ここから見えてくるのは、Docker社のチャレンジは単にLinuxのコンテナ技術を製品化するだけでなく、これまで主にOSベンダーが築いてきたOSを中心とした開発ツールやアプリケーションベンダーとのエコシステムを、コンテナ型仮想化技術を核に再構築しようとしているところです。いまのDockerの勢いを見ていると、このエコシステムの構築とDockerのプラットフォーム化の実現は一定のに説得力があるように思います。&rdquo;</strong>って、非常に意味のある言葉のような気がしています。(僕は、"OSベンダー"を、"インフラベンダー"と理解してまとめに共感しています。)</p>
+<p>そして<a href="http://www.publickey1.jp/blog/14/docker_hubdockerdocker.html">Publickeyの記事</a>のまとめで、<strong>&ldquo;ここから見えてくるのは、Docker社のチャレンジは単にLinuxのコンテナ技術を製品化するだけでなく、これまで主にOSベンダーが築いてきたOSを中心とした開発ツールやアプリケーションベンダーとのエコシステムを、コンテナ型仮想化技術を核に再構築しようとしているところです。いまのDockerの勢いを見ていると、このエコシステムの構築とDockerのプラットフォーム化の実現は一定のに説得力があるように思います。&rdquo;</strong>って、非常に意味のある言葉のような気がしています。(僕は、"OSベンダー"を、"インフラ提供者"と理解してまとめに共感しています。)</p>
 
 <p>githubエコシステムができたことで”コードに対する価値感”や”開発の進め方”が大きく変わったように、<strong>Dockerエコシステム</strong>が形成されていくことで、開発運用の方法が根底から変わっていくのではないかと思います。</p>
 
