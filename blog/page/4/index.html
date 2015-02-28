@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
+  <meta name="description" content="Intel Galileo(以降、Galileo)は、arduino互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用のArduino IDEということになります。しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、 &hellip;">
   
 
-  <meta name="description" content="Datadogに任意のメトリックスを継続的に送信するには、DogStatsDを介してDatadogのサイトに送信するのが最も簡単な方法です。DogStatsDは、NYC発祥の物販サイトEtsyがFOSS化しているStatsDのプロトコルを実装したメトリクス集積サーバ(a metrics &hellip;">
+  <meta name="description" content="Intel Galileo(以降、Galileo)は、arduino互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用のArduino IDEということになります。しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,293 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-24T23:03:00+09:00" pubdate data-updated="true">Apr 24<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになります。</p>
+
+<p>しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、Galileoの優位性はLinuxの有志が提供してくれている各種ソフトとarduino互換GPIOの連携と勝手に思い込んでいるので、IDEを使わずにGPIOの操作ができないかと調べた結果をまとめてみます。</p>
+
+<h2>Galileo GPIOの仕様もどき</h2>
+
+<p>Intel社みたいな大手企業なら何処かに正式な仕様書が存在していると思うのだが、googleで検索しても僕はそれらしきものを見つけることができなかった。しかしながら、次のSergey氏のサイトに書かれている内容を参照するとGPIOの動作が理解できます。</p>
+
+<p><a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Intel Galileo &ndash; Programming GPIO From Linux</a></p>
+
+<p><a href="https://www.yoctoproject.org/">Yocto Project</a>のLinuxで動作しているGalileoも、<a href="http://www.raspberrypi.org/">Raspberry Pi</a>等と同じように、特定の場所のファイルに対し設定内容を書き込めば、GPIOの目的ピンに意図している設定は反映されるようになっています。</p>
+
+<p>GPIOの設定内容を書き込むファイルの場所は次のディレクトリになります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /sys/class/
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>まず、ディレクトリ移動して内容を見てみましょう。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@clanton:/sys/class# ls
+</span><span class='line'>backlight cpuid      input     net       scsi_generic   tty
+</span><span class='line'>bdi   dma      mdio_bus  pci_bus       scsi_host      udc
+</span><span class='line'>block   firmware     mem       power_supply  spi_host     uio
+</span><span class='line'>bluetooth gpio       misc      pwm       spi_master     vc
+</span><span class='line'>bsg   i2c-adapter  mmc_host  rfkill      spi_transport  vtconsole
+</span><span class='line'>cln_esram_test  i2c-dev      msr       scsi_device   spidev
+</span><span class='line'>cln_imr_test  ieee80211    mtd       scsi_disk     thermal
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>GPIOピンの設定は、gpioディレクトリとpwmディレクトリ以下にあるファイルに書き込み操作をすることによって行います。</p>
+
+<p>各ピンの設定詳細に関しては、先に紹介した<a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Sergey氏のサイト</a>の図表を参照してください。</p>
+
+<h2>コンソール入力でGPIOピンを操作してみる</h2>
+
+<h3>1.Digital 出力</h3>
+
+<p>digital 5ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、出力設定なので<code>direction</code>ファイルに<code>out</code>(出力)と書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>信号の出力モードを設定します。LEDを付けるなどの一般用途では<code>strong</code>を使います。詳細に関しては、先のサイトを参照してください。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ピン出力のHIGH, LOWは、<code>value</code>ファイルへ<code>1</code>と<code>0</code>を書き込むことで操作します。1=HIGH, 0=LOWです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにLEDを接続すれば、Lチカができます。</p>
+
+<h3>2.Digital 入力</h3>
+
+<p>digital 5ピンを入力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
+その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
+
+<p>今回は、入力設定なので<code>direction</code>ファイルに<code>in</code>(入力)と書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;in&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>信号の出力モードを設定します。先の資料には、<code>strong</code>で問題と書かれていますが、僕の手元の環境では再現できませんでした。<strong>僕の環境では、<code>hiz</code>の設定をしたときのみです。</strong>従って、ここでは、<code>hiz</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;hiz&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>value</code>ファイルに、HIGH=1, LOW=0で値が書かれているのを確認してみます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにボタンスイッチ等を接続し、ON/OFFしファイルを状態をcatしてみましょう。</p>
+
+<h3>3.Analog 出力</h3>
+
+<p>digital 5ピンをPWM出力として使用するための設定をしてみます。</p>
+
+<p>次の4ステップは、Digital出力を準備するのと同じです。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>PWMの設定する前は、該当ピンの出力が確実にLOWでなっているように設定しておきます。</em></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWM出力の準備を始めます。Digital 5ピンのPWMチャネルが5番であることを、先の対応図表で確認します。
+(以下の各コマンド内の<code>5</code>は、PWMチャネル番号です。)</p>
+
+<p><code>/sys/class/pwm/pwmchip0/export</code>に対して、pwmチャネル番号<code>5</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>/sys/class/pwm/pwmchip0/enable</code>に対して、<code>1</code>(有効)を書き込みます。
+<code>1</code>=有効,<code>0</code>=無効です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/enable
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWMの周期時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/period</code>へ書き込みます。<code>1900000</code>は、IDEがPWMに設定していた周期時間です。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1900000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/period
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PWMのHIGHの時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/duty_cycle</code>へ書き込みます。<code>800000</code>は、50%の仕事率を設定しています。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;800000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/duty_cycle
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一通りPWMの設定が済んだところで、<code>/sys/class/gpio/gpio17/value</code>をHIGHにします。(PWMが動作している間に<code>value</code>をcatしてみると、<code>1</code>か<code>0</code>が出力されます。)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>digital 5ピンにLEDを接続すれば、LEDが50%の照度で点灯ができます。
+<code>duty_cycle</code>の数値を変更すると、LEDの照度が変わります。</p>
+
+<h3>4.Analog 入力</h3>
+
+<p>Analog A0ピンを出力として使用するための設定をしてみます。</p>
+
+<p>Galileoボード上のanalog A0ピンは、複数の機能をMUXで切り替えるようになっています。
+gpio番号としては37番に書き込みをすることによって、A0ピンをAD7298 ADCのICに接続することができます。</p>
+
+<p>今までと同じように、<code>export</code>ファイルに<code>37</code>を書き込みます。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;37&quot;</span> &gt; /sys/class/gpio/export
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>MUXを設定するための<code>gpio37/direction</code>を<code>out</code>(出力)に設定します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio37/direction
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>gpio37/value</code>を、<code>0</code>(LOW)にしAD7298 ADCにA0入力を接続します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio37/value
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>/sys/bus/iio/devices/iio\:device0/in_voltage0_raw</code>をcatすることで、A0入力を読み取ります。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/bus/iio/devices/iio<span class="se">\:</span>device0/in_voltage0_raw
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>ボリューム抵抗等をA0に接続し、catを繰り返すと数値が変化していることが確認できます。</p>
+
+<h3>5.使用したピンの後処理</h3>
+
+<p>ピンの利用解除は、次に示すようにgpioディレクトリかpwmのディレクトリの unxport ファイルに、該当GPIO番号かPWMチャネル番号の書き出して処理します。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/unexport
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/unexport
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>まとめ</h2>
+
+<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIO操作の確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
+
+<p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -531,60 +818,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/14/datadog-integrations/">Datadog Integrationsを追加する</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-14T16:44:00+09:00" pubdate data-updated="true">Apr 14<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>DD−agentが収集している基本的なメトリックスのグラフを見ているだけでも多くのことが分るようになりますが、それ以外にもDatadog社が事前に準備してくれているメトリックス収集プラグインが存在しています。これらのプラグインをDatadogでは、Integrationsと読んでいるようです。</p>
-
-<p>Datadogにloginし、ダッシュボードから<code>Integrations</code> タブにカーソルを移動し、ドロップダウンから<code>Integrations</code>を選択すると次のページに移動することができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>各Instarationのタイルにカーソルを合わせると、その解説が表示され、<code>Avalable</code>ボタンが、<code>Install</code>に変わります。<code>Install</code>をダブルクリックする、次のようなインストール確認の画面が表示されます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-add.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationタブを選択して、設定項目を入力し<code>Install Integration</code>をクリックします。</p>
-
-<p>Integrationの種類によっては、サーバー側の設定が必要なものもあります。その情報は、Configurationページで詳細に記載されています。その手順に従って設定作業を完了しておいてください。</p>
-
-<p>Datadog側でIntagrationのインストールが完了すると、ページ上段のInstalled項目にタイルが表示されます。後に設定の変更などが発生した場合は、緑の<code>Installed</code>ボタンをクリックし、再度<code>Configuration</code>タブ選択し再設定することで、新しい設定を反映させるとことができます。</p>
-
-<p><img class="center" src="/images/blog-images/datadog-integrations-installed.png" width="800" height="800" title="datadog integrations" alt="datadog integrations"></p>
-
-<p>Configurationが正しくできてメトリックスがDatadog側で受信できていれば、しばらくすると<code>Infrastracture</code>ページにメトリックスを表示するための青いラベルが追加されます。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -600,6 +833,10 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/03/01/kakaku-paradox-2/">SaaSの台数ベース価格のパラドクス</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/06/13/what-i-think-about-libswarm-1/">DockerHubとlibswarmの提供で、エコシステム基盤の定義?</a>
@@ -637,10 +874,6 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
         <a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -654,7 +887,7 @@ Githubのサイトで、<strong>DD-agent</strong>を検索すると、次のよ�
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - @jhotta -
+  Copyright &copy; 2015 - @jhotta -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

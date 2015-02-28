@@ -9,10 +9,10 @@
   <meta name="author" content="@jhotta">
 
   
-  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(前編)でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。 &hellip;">
+  <meta name="description" content="&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto &hellip;">
   
 
-  <meta name="description" content="Raspberry piにもDatadog Agentをインストールしてみる(前編)でDatadog Agent(以降DD-agent)のインストールと動作は確認できました。しかし前回のままでは、Raspberry Piの再起動時に次のコマンドでDD-Agentを起動する手作業が残っていました。 &hellip;">
+  <meta name="description" content="&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,67 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/13/compiling-yocto-for-galileo-1/">Yocto Linux 自力でのコンパイル再挑戦, Interface 2014/6月号を写経</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-13T18:41:00+09:00" pubdate data-updated="true">May 13<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>&ldquo;お手軽ボードでホントにできる! インテルでI/O&#8221;と書かれたInterfaceによるGalileo特集号が出ていたので買ってみた。</p>
+
+<p>組み込みに関しては何から始めていいのか全然分からなかった僕には、一通りまとまった情報として非常に参考なった。又第3部以降は、yocto Projectに関する記事がしっかり書かれていたので、実際に写経をしてみることにした。</p>
+
+<p>その際に、読み飛ばして逆に無駄な時間を使ってしまったポイントを箇条書きしてみた。(記事をちゃんと読んでいる人は問題ないと思うけど…)</p>
+
+<ul>
+<li>VirtualBoxの仮想マシンのディクスのサイズは、最低でも<strong>32Gバイト以上</strong>を準備する。toolchaineをコンパイルするなら、雑誌の時事通り100Gバイトを用意しておく。ディスク容量不足は、コンパイル後半で分かるので大幅な時間のロスになります。(記事では「100Gバイト程度」になっている…)</li>
+<li>VirtualBoxの仮想マシンのネットワークのグローバルIP接続設定と確認は、事前に済ませる。(当然か…)</li>
+<li>ubuntuの配布パッケージには、<code>unzipx</code>は存在しないようなので、<code>apt-get install</code>では<code>unzip</code>に変更する。</li>
+<li>wgetなどで仮想マシンへ直接DLしたい場合は、次のリンク<a href="http://downloadmirror.intel.com/23171/eng/Board_Support_Package_Sources_for_Intel_Quark_v0.7.5.7z">Board_Support_Package_Sources_for Intel_Quark_V0.7.5.7z</a>を利用する。</li>
+<li>Ubuntu12.04の場合、ビルド時に渡ってくる引数が長すぎるとコンパイルエラーになる。従って<strong>必ず記事の指定通りの方法で<code>meta-clanton_v0.7.5.tar gz</code>を解凍する</strong>。(つまらないコンパイルエラーが一番時間の無駄!)</li>
+<li><code>meta-clanton_v0.7.5/yocto_build/conf/local.conf</code>内の<code>BB_NUMBEWR_THERADS</code>と<code>PARALLEL_MAKE</code>の値を、<strong>仮想マシンの割当CPUコア数に合わせて変更をしておく</strong>。ビルド時に並列プロセスが重なると逆に遅くなる。(雑誌の110項右上参照)</li>
+<li>ShellにPathを設定していないので、<code>source porky/oe-build-env yocto_build</code>を真面目に実行しないとbitbakeが実行できなかった。(当然かonz…)</li>
+</ul>
+
+
+<p>尚コンパイル環境にUbuntu12.10以降を使う場合は、田所氏の<a href="http://wiki.tokor.org/index.php?Intel%A4%CEGalileo%A4%CESD%A5%AB%A1%BC%A5%C9%CD%D1Linux%A5%A4%A5%E1%A1%BC%A5%B8%A4%F2%BA%EE%A4%EB%A1%A1-%A1%A1Galileo">「IntelのGalileoのSDカード用Linuxイメージを作る」</a>がとっても参考になります。是非参考にしてください。</p>
+
+<p>蛇足ですが…。今回の記事を読まなかったらSDイメージのコンパイルに再挑戦することはなかったと思います。田所氏のSDイメージは、何でも簡単に手に入手できる便利なrepoがあるのという意味で、初心者には最高の選択肢だと思っています。</p>
+
+<p><strong>これから、次の段階のカスタムイメージ作成に挑戦します~。</strong></p>
+
+<h4>追記:</h4>
+
+<p>Interface誌に従って、meta-toolchainをコンパイルしていたら軽く32Gのディスクスペースを使いは果たしてしまいました。後で後悔しない為にも100Gバイトのディスクスペース確保は必要!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -804,293 +865,6 @@ Linuxベースの開発経験を持ったエンジニアもGPIOを操作して�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-24T23:03:00+09:00" pubdate data-updated="true">Apr 24<span>th</span>, 2014</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Intel Galileo(以降、Galileo)は、<a href="http://www.arduino.cc/">arduino</a>互換のGPIOを装備しています。このGPIOを使うためにIntel社が準備してくれているのがGalileo用の<a href="https://communities.intel.com/docs/DOC-22226">Arduino IDE</a>ということになります。</p>
-
-<p>しかし、僕が愛用しているSDイメージではこのIDEと通信できない。更に僕は、Galileoの優位性はLinuxの有志が提供してくれている各種ソフトとarduino互換GPIOの連携と勝手に思い込んでいるので、IDEを使わずにGPIOの操作ができないかと調べた結果をまとめてみます。</p>
-
-<h2>Galileo GPIOの仕様もどき</h2>
-
-<p>Intel社みたいな大手企業なら何処かに正式な仕様書が存在していると思うのだが、googleで検索しても僕はそれらしきものを見つけることができなかった。しかしながら、次のSergey氏のサイトに書かれている内容を参照するとGPIOの動作が理解できます。</p>
-
-<p><a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Intel Galileo &ndash; Programming GPIO From Linux</a></p>
-
-<p><a href="https://www.yoctoproject.org/">Yocto Project</a>のLinuxで動作しているGalileoも、<a href="http://www.raspberrypi.org/">Raspberry Pi</a>等と同じように、特定の場所のファイルに対し設定内容を書き込めば、GPIOの目的ピンに意図している設定は反映されるようになっています。</p>
-
-<p>GPIOの設定内容を書き込むファイルの場所は次のディレクトリになります。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /sys/class/
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>まず、ディレクトリ移動して内容を見てみましょう。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>root@clanton:/sys/class# ls
-</span><span class='line'>backlight cpuid      input     net       scsi_generic   tty
-</span><span class='line'>bdi   dma      mdio_bus  pci_bus       scsi_host      udc
-</span><span class='line'>block   firmware     mem       power_supply  spi_host     uio
-</span><span class='line'>bluetooth gpio       misc      pwm       spi_master     vc
-</span><span class='line'>bsg   i2c-adapter  mmc_host  rfkill      spi_transport  vtconsole
-</span><span class='line'>cln_esram_test  i2c-dev      msr       scsi_device   spidev
-</span><span class='line'>cln_imr_test  ieee80211    mtd       scsi_disk     thermal
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>GPIOピンの設定は、gpioディレクトリとpwmディレクトリ以下にあるファイルに書き込み操作をすることによって行います。</p>
-
-<p>各ピンの設定詳細に関しては、先に紹介した<a href="http://www.malinov.com/Home/sergey-s-blog/intelgalileo-programminggpiofromlinux">Sergey氏のサイト</a>の図表を参照してください。</p>
-
-<h2>コンソール入力でGPIOピンを操作してみる</h2>
-
-<h3>1.Digital 出力</h3>
-
-<p>digital 5ピンを出力として使用するための設定をしてみます。</p>
-
-<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
-その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
-
-<p>今回は、出力設定なので<code>direction</code>ファイルに<code>out</code>(出力)と書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>信号の出力モードを設定します。LEDを付けるなどの一般用途では<code>strong</code>を使います。詳細に関しては、先のサイトを参照してください。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ピン出力のHIGH, LOWは、<code>value</code>ファイルへ<code>1</code>と<code>0</code>を書き込むことで操作します。1=HIGH, 0=LOWです。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>digital 5ピンにLEDを接続すれば、Lチカができます。</p>
-
-<h3>2.Digital 入力</h3>
-
-<p>digital 5ピンを入力として使用するための設定をしてみます。</p>
-
-<p>Galileoボード上のdigital 5ピンは、gpio番号としては17番に対応してることを先に紹介した図表で確認します。
-その上で、<code>export</code>ファイルに<code>17</code>を書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>書き込みが完了すると、<code>gpio17</code>ディレクトリが生成されます。このディレクトリ内に存在している各ファイルに設定を書き込んでいきます。</p>
-
-<p>今回は、入力設定なので<code>direction</code>ファイルに<code>in</code>(入力)と書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;in&quot;</span> &gt; /sys/class/gpio/gpio17/direction
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>信号の出力モードを設定します。先の資料には、<code>strong</code>で問題と書かれていますが、僕の手元の環境では再現できませんでした。<strong>僕の環境では、<code>hiz</code>の設定をしたときのみです。</strong>従って、ここでは、<code>hiz</code>を書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;hiz&quot;</span> &gt; /sys/class/gpio/gpio17/drive
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>value</code>ファイルに、HIGH=1, LOW=0で値が書かれているのを確認してみます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/class/gpio/gpio17/value
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>digital 5ピンにボタンスイッチ等を接続し、ON/OFFしファイルを状態をcatしてみましょう。</p>
-
-<h3>3.Analog 出力</h3>
-
-<p>digital 5ピンをPWM出力として使用するための設定をしてみます。</p>
-
-<p>次の4ステップは、Digital出力を準備するのと同じです。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/export
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio17/direction
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;strong&quot;</span> &gt; /sys/class/gpio/gpio17/drive
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><em>PWMの設定する前は、該当ピンの出力が確実にLOWでなっているように設定しておきます。</em></p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio17/value
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>PWM出力の準備を始めます。Digital 5ピンのPWMチャネルが5番であることを、先の対応図表で確認します。
-(以下の各コマンド内の<code>5</code>は、PWMチャネル番号です。)</p>
-
-<p><code>/sys/class/pwm/pwmchip0/export</code>に対して、pwmチャネル番号<code>5</code>を書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/export
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>/sys/class/pwm/pwmchip0/enable</code>に対して、<code>1</code>(有効)を書き込みます。
-<code>1</code>=有効,<code>0</code>=無効です。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/enable
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>PWMの周期時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/period</code>へ書き込みます。<code>1900000</code>は、IDEがPWMに設定していた周期時間です。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1900000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/period
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>PWMのHIGHの時間をナノ秒で<code>/sys/class/pwm/pwmchip0/pwm5/duty_cycle</code>へ書き込みます。<code>800000</code>は、50%の仕事率を設定しています。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;800000&quot;</span> &gt; /sys/class/pwm/pwmchip0/pwm5/duty_cycle
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>一通りPWMの設定が済んだところで、<code>/sys/class/gpio/gpio17/value</code>をHIGHにします。(PWMが動作している間に<code>value</code>をcatしてみると、<code>1</code>か<code>0</code>が出力されます。)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;1&quot;</span> &gt; /sys/class/gpio/gpio17/value
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>digital 5ピンにLEDを接続すれば、LEDが50%の照度で点灯ができます。
-<code>duty_cycle</code>の数値を変更すると、LEDの照度が変わります。</p>
-
-<h3>4.Analog 入力</h3>
-
-<p>Analog A0ピンを出力として使用するための設定をしてみます。</p>
-
-<p>Galileoボード上のanalog A0ピンは、複数の機能をMUXで切り替えるようになっています。
-gpio番号としては37番に書き込みをすることによって、A0ピンをAD7298 ADCのICに接続することができます。</p>
-
-<p>今までと同じように、<code>export</code>ファイルに<code>37</code>を書き込みます。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;37&quot;</span> &gt; /sys/class/gpio/export
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>MUXを設定するための<code>gpio37/direction</code>を<code>out</code>(出力)に設定します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;out&quot;</span> &gt; /sys/class/gpio/gpio37/direction
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>gpio37/value</code>を、<code>0</code>(LOW)にしAD7298 ADCにA0入力を接続します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;0&quot;</span> &gt; /sys/class/gpio/gpio37/value
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>/sys/bus/iio/devices/iio\:device0/in_voltage0_raw</code>をcatすることで、A0入力を読み取ります。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat /sys/bus/iio/devices/iio<span class="se">\:</span>device0/in_voltage0_raw
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>ボリューム抵抗等をA0に接続し、catを繰り返すと数値が変化していることが確認できます。</p>
-
-<h3>5.使用したピンの後処理</h3>
-
-<p>ピンの利用解除は、次に示すようにgpioディレクトリかpwmのディレクトリの unxport ファイルに、該当GPIO番号かPWMチャネル番号の書き出して処理します。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;17&quot;</span> &gt; /sys/class/gpio/unexport
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n <span class="s2">&quot;5&quot;</span> &gt; /sys/class/pwm/pwmchip0/unexport
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>まとめ</h2>
-
-<p>arduino等の組み込みプログラムと違って、registerの特定番地をHIGH,LOW設定すのではなく、ファイルへの書き込みのみでGPIO操作の確認できたと思います。そして、一般的なプログラミング言語からもGPIOが簡単に操作できる理由が提示できたと思います。次は、この原理をベースにしたライブラリー使って、実際のプログラムを書いてみることにします。</p>
-
-<p>この続きは<a href="https://jhotta.github.io/blog/2014/04/25/controlling-gpio-on-intel-galileo-with-python-2/">Intel GalileoのGPIOをpythonアプリから操作してみる(実践)</a>です。合わせて、参照していただけると幸いです。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -1106,6 +880,10 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/03/01/kakaku-paradox-2/">SaaSの台数ベース価格のパラドクス</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2014/06/13/what-i-think-about-libswarm-1/">DockerHubとlibswarmの提供で、エコシステム基盤の定義?</a>
@@ -1143,10 +921,6 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
         <a href="/blog/2014/04/24/controlling-gpio-in-intel-galileo-with-python/">Intel GalileoのGPIOをpythonアプリから操作してみる(基礎)</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2014/04/24/datadog-sending-custom-metrics-1/">Datadogに任意のメトリックスを送信する (その1)</a>
-      </li>
-    
   </ul>
 </section>
 
@@ -1160,7 +934,7 @@ gpio番号としては37番に書き込みをすることによって、A0ピン
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - @jhotta -
+  Copyright &copy; 2015 - @jhotta -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
